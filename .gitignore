@@ -1,0 +1,9 @@
+logs
+*.log
+npm-debug.log*
+dist
+node_modules/
+*.tsbuildinfo
+.eslintcache
+.env
+.DS_Store
