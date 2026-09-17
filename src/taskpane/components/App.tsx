@@ -1,45 +1,60 @@
 import * as React from "react";
+import FillPanel from './FillPanel';
 import Header from "./Header";
-import HeroList, { HeroListItem } from "./HeroList";
-import TextInsertion from "./TextInsertion";
-import { makeStyles } from "@fluentui/react-components";
-import { Ribbon24Regular, LockOpen24Regular, DesignIdeas24Regular } from "@fluentui/react-icons";
-import { insertText } from "../taskpane";
+import CreatePanel from './CreatePanel';
+import {
+  makeStyles,
+  type SelectTabData,
+  type SelectTabEvent,
+  Tab,
+  TabList,
+} from '@fluentui/react-components';
+import {
+  ChatHelpRegular, DocumentEditRegular, TagAddRegular,
+} from '@fluentui/react-icons';
+import HelpPanel from './HelpPanel';
 
-interface AppProps {
-  title: string;
+enum TabPanel {
+  FILL,
+  CREATE,
+  HELP,
 }
 
 const useStyles = makeStyles({
   root: {
     minHeight: "100vh",
   },
+  panel: {
+    padding: "1rem",
+  }
 });
 
-const App: React.FC<AppProps> = (props: AppProps) => {
+const App: React.FC = () => {
   const styles = useStyles();
-  // The list items are static and won't change at runtime,
-  // so this should be an ordinary const, not a part of state.
-  const listItems: HeroListItem[] = [
-    {
-      icon: <Ribbon24Regular />,
-      primaryText: "Achieve more with Office integration",
-    },
-    {
-      icon: <LockOpen24Regular />,
-      primaryText: "Unlock features and functionality",
-    },
-    {
-      icon: <DesignIdeas24Regular />,
-      primaryText: "Create and visualize like a pro",
-    },
-  ];
+
+  const [activePanel, setActivePanel] = React.useState<TabPanel>(TabPanel.FILL);
+
+  const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
+    setActivePanel(data.value as TabPanel);
+  }
 
   return (
     <div className={styles.root}>
-      <Header logo="assets/logo-filled.png" title={props.title} message="Welcome" />
-      <HeroList message="Discover what this add-in can do for you today!" items={listItems} />
-      <TextInsertion insertText={insertText} />
+      <Header logo="assets/logo-filled.png" />
+
+      <nav>
+        <TabList selectedValue={activePanel} onTabSelect={onTabSelect}>
+          <Tab id="fill-panel-label" icon={<DocumentEditRegular />} value={TabPanel.FILL}>Remplir</Tab>
+          <Tab id="create-panel-label" icon={<TagAddRegular />} value={TabPanel.CREATE}>Créer</Tab>
+          <Tab id="help-panel-label" icon={<ChatHelpRegular />} value={TabPanel.HELP}>Aide</Tab>
+        </TabList>
+      </nav>
+
+      <section className={styles.panel}>
+        {activePanel === TabPanel.FILL && <FillPanel/>}
+        {activePanel === TabPanel.CREATE && <CreatePanel/>}
+        {activePanel === TabPanel.HELP && <HelpPanel/>}
+      </section>
     </div>
   );
 };
