@@ -14,9 +14,7 @@ import {
   useTypingAnnounce,
 } from '@fluentui/react-components';
 import * as React from "react";
-import { type Client, ClientType } from '../../types/Client';
-import type { TaggedControl } from '../../types/TaggedControl';
-import { insertClientData } from '../taskpane';
+import { type Client, ClientType, insertClientData, type TaggedControl } from '../taskpane';
 
 const DEBOUNCE_MS = 300;
 

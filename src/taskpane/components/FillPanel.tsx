@@ -13,9 +13,12 @@ import {
 } from '@fluentui/react-components';
 import { ArrowSyncRegular, DocumentPdfRegular } from '@fluentui/react-icons';
 import * as React from "react";
-import type { GroupedTaggedControls } from '../../types/TaggedControl';
 import {
-  exportToPdf, getRichTextTaggedControls, groupByTag, scrollToContentControl,
+  exportToPdf,
+  getRichTextTaggedControls,
+  groupByTag,
+  type GroupedTaggedControls,
+  scrollToContentControl,
 } from '../taskpane';
 import ClientSearch from './ClientSearch';
 import ControlContentUpdateInput from './ControlContentUpdateInput';

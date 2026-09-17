@@ -1,12 +1,5 @@
 /* global Word console */
 
-import { type Client, clientPlaceholders } from '../types/Client';
-import {
-  type GroupedTaggedControls,
-  TAGGED_CONTROL_SEPARATOR,
-  type TaggedControl,
-} from '../types/TaggedControl';
-
 export async function tagSelection(
   tag: string,
   data: { label: string, value: string } | null,
@@ -161,3 +154,76 @@ export async function exportToPdf() {
   const bytes = await getPdfAsBase64();
   downloadPdf(bytes, "document.pdf");
 }
+
+/**
+ * Client
+ */
+export enum ClientType {
+  PROFESSIONAL = "Professionnel",
+  INDIVIDUAL = "Particulier",
+}
+
+export type ClientInfo = {
+  reference: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  cp?: string;
+  city?: string;
+  note?: string;
+  accountantId?: string;
+}
+
+export type ProfessionalClient = ClientInfo & {
+  type: ClientType.PROFESSIONAL;
+  company: string;
+  siret?: string;
+};
+
+export type IndividualClient = ClientInfo & {
+  type: ClientType.INDIVIDUAL;
+  lastName: string;
+};
+
+export type Client = ProfessionalClient | IndividualClient;
+
+export const clientPlaceholders: Record<string, (client: Client) => string> = {
+  "reference" : (client: Client) => client.reference,
+  "type" : (client: Client) => client.type,
+  "name": (client: Client) => {
+    if (client.type === ClientType.PROFESSIONAL) {
+      return client.company;
+    } else if (client.firstName) {
+      return `${client.firstName} ${client.lastName}`;
+    } else {
+      return client.lastName;
+    }
+  },
+  "company" : (client: Client) => client.type === ClientType.PROFESSIONAL ? client.company : "",
+  "siret" : (client: Client) => client.type === ClientType.PROFESSIONAL ? client.siret : "",
+  "firstName" : (client: Client) => client.firstName,
+  "lastName" : (client: Client) => client.lastName,
+  "email" : (client: Client) => client.email,
+  "phone" : (client: Client) => client.phone,
+  "address" : (client: Client) => client.address,
+  "cp" : (client: Client) => client.cp,
+  "city" : (client: Client) => client.city,
+  "note" : (client: Client) => client.note,
+  "accountantId" : (client: Client) => client.accountantId,
+}
+
+/**
+ * TaggedControl
+ */
+export interface TaggedControl {
+  id: number;
+  type: string;
+  tag: string;
+  data: string;
+}
+
+export const TAGGED_CONTROL_SEPARATOR = ':';
+
+export type GroupedTaggedControls = Record<string, {controls: TaggedControl[], hasData: boolean}>;
