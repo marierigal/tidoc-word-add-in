@@ -10,6 +10,7 @@ import {
   type SelectionEvents,
   useId,
   tokens,
+  Text,
 } from '@fluentui/react-components';
 import * as React from "react";
 import { tagSelection } from '../taskpane';
@@ -40,7 +41,7 @@ const useStyles = makeStyles({
   }
 });
 
-const CreatePanel = () => {
+const CreatePanel: React.FC = () => {
   const styles = useStyles();
 
   const tagNameInputId = useId("tag-name-input");
@@ -72,14 +73,20 @@ const CreatePanel = () => {
     setTagName("");
     setListItems([]);
   }
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      await addTagToSelection()
+    }
+  };
 
   return (
     <div role="tabpanel" aria-labelledby="create-panel-label" className={styles.root}>
-      <p className={styles.description}>Créer une zone intéractive à la position du curseur.</p>
+      <Text className={styles.description}>Créer une zone intéractive à la position du curseur.</Text>
 
       <div className={styles.inputGroup}>
         <Label htmlFor={tagNameInputId}>Nom de la zone intéractive</Label>
-        <Input id={tagNameInputId} onChange={onTagNameChange} value={tagName} />
+        <Input id={tagNameInputId} onChange={onTagNameChange} value={tagName} onKeyDown={(e) => handleKeyDown(e)} />
       </div>
 
       <div className={styles.inputGroup}>

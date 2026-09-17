@@ -1,5 +1,7 @@
 /* global Word console */
 
+import { type Client, clientPlaceholders } from '../types/Client';
+
 export async function tagSelection(
   tag: string,
   type: string = Word.ContentControlType.richText,
@@ -27,20 +29,31 @@ export async function tagSelection(
   });
 }
 
-export async function checkTags() {
-  await Word.run(async (context) => {
+export interface TaggedControl {
+  id: number;
+  tag: string;
+}
+
+export async function getRichTextTaggedControls(): Promise<TaggedControl[]> {
+  return await Word.run(async (context) => {
     const contentControls = context.document.contentControls;
-    contentControls.load("items")
+    contentControls.load("items/id,items/tag,items/type");
     await context.sync();
-    for (const contentControl of contentControls.items) {
-      contentControl.load("tag");
-      await context.sync();
-      console.log("Tag detected :", contentControl.isNullObject ? "none" : contentControl.tag);
-    }
+
+    return contentControls.items
+      .filter(cc => cc.type === Word.ContentControlType.richText && cc.tag)
+      .map(cc => ({ id: cc.id, tag: cc.tag }));
   });
 }
 
-export async function insertClientData(contentControlTag: string, client: { name: string; address: string; }) {
+export function groupByTag(controls: TaggedControl[]): Record<string, TaggedControl[]> {
+  return controls.reduce((groups, cc) => {
+    (groups[cc.tag] ??= []).push(cc);
+    return groups;
+  }, {} as Record<string, TaggedControl[]>);
+}
+
+export async function insertClientData(contentControlTag: string, client: Client) {
   await Word.run(async (context) => {
     const contentControls = context.document.contentControls.getByTag(contentControlTag);
 
@@ -52,17 +65,13 @@ export async function insertClientData(contentControlTag: string, client: { name
 
       // Search for each placeholder and replace it in place, so the paragraph
       // keeps its existing style (we're not deleting/recreating paragraphs)
-      const placeholders: Record<string, string> = {
-        "{{name}}": client.name, "{{address}}": client.address,
-      };
-
-      for (const [placeholder, value] of Object.entries(placeholders)) {
-        const results = range.search(placeholder, { matchCase: true });
+      for (const [placeholder, replacer] of Object.entries(clientPlaceholders)) {
+        const results = range.search(placeholder, { matchCase: false });
         results.load("items");
         await context.sync();
 
         results.items.forEach((found) => {
-          found.insertText(value, Word.InsertLocation.replace);
+          found.insertText(replacer(client), Word.InsertLocation.replace);
         });
       }
     }

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-const HelpPanel = () => {
+const HelpPanel: React.FC = () => {
   return (
     <div role="tabpanel" aria-labelledby="help-panel-label">Help panel</div>
   )
