@@ -24,7 +24,8 @@ module.exports = async (env, options) => {
         import: [
           "./src/taskpane/index.tsx",
           "./src/taskpane/taskpane.html",
-          "./src/types/*"
+          "./src/types/Client.ts",
+          "./src/types/TaggedControl.ts",
         ],
         dependOn: "react",
       },
