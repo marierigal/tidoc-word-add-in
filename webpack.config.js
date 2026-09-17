@@ -21,7 +21,11 @@ module.exports = async (env, options) => {
       polyfill: ["core-js/stable", "regenerator-runtime/runtime"],
       react: ["react", "react-dom"],
       taskpane: {
-        import: ["./src/taskpane/index.tsx", "./src/taskpane/taskpane.html"],
+        import: [
+          "./src/taskpane/index.tsx",
+          "./src/taskpane/taskpane.html",
+          "./src/types/*"
+        ],
         dependOn: "react",
       },
       commands: "./src/commands/commands.ts",
