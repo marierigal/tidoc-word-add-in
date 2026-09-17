@@ -7,16 +7,18 @@ import {
   List,
   ListItem,
   makeStyles,
-  SearchBox,
-  Select,
   TagGroup,
   Text,
   tokens,
 } from '@fluentui/react-components';
-import { ArrowSyncRegular } from '@fluentui/react-icons';
+import { ArrowSyncRegular, DocumentPdfRegular } from '@fluentui/react-icons';
 import * as React from "react";
-import { getRichTextTaggedControls, groupByTag, type TaggedControl } from '../taskpane';
+import type { GroupedTaggedControls } from '../../types/TaggedControl';
+import {
+  exportToPdf, getRichTextTaggedControls, groupByTag, scrollToContentControl,
+} from '../taskpane';
 import ClientSearch from './ClientSearch';
+import ControlContentUpdateInput from './ControlContentUpdateInput';
 
 const useStyles = makeStyles({
   root: {
@@ -24,6 +26,7 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: "1rem",
     maxWidth: "400px",
+    paddingBottom: "200px",
   },
   description: {
     color: tokens.colorNeutralForeground3,
@@ -38,26 +41,36 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
-  }
+  },
+  tagGroup: {
+    flexWrap: "wrap",
+    rowGap: tokens.spacingVerticalXS,
+  },
+  flexRow: {
+    display: "flex",
+    flexDirection: "row",
+    gap: "1rem",
+    alignItems: "baseline",
+  },
+  inputGroup: {
+    display: "flex",
+    flexDirection: "column",
+    // Use 2px gap below the label (per the design system)
+    gap: "2px",
+  },
 });
 
 const FillPanel: React.FC = () => {
   const styles = useStyles();
 
-  const [groups, setGroups] = React.useState<Record<string, TaggedControl[]>>({});
+  const [groups, setGroups] = React.useState<GroupedTaggedControls>({});
 
   const handleRefresh = async () => {
     const controls = await getRichTextTaggedControls();
     setGroups(groupByTag(controls));
   }
 
-  const scrollToContentControl = async (id: number) => {
-    await Word.run(async (context) => {
-      const cc = context.document.contentControls.getById(id);
-      cc.select(); // selects the control's content AND scrolls it into view
-      await context.sync();
-    });
-  };
+
 
   React.useEffect(() => {
     getRichTextTaggedControls().then(controls => setGroups(groupByTag(controls)));
@@ -69,24 +82,52 @@ const FillPanel: React.FC = () => {
 
       <Button onClick={handleRefresh} icon={<ArrowSyncRegular />}>Mettre à jour la liste</Button>
 
+      <Button appearance="primary" onClick={exportToPdf} icon={<DocumentPdfRegular />}>Exporter en PDF</Button>
+
       <List className={styles.list}>
-        {Object.entries(groups).map(([tag, controls]) => (
+        {Object.entries(groups).map(([tag, { controls, hasData }]) => (
           <ListItem key={tag} className={styles.listItem}>
             <Divider />
 
-            <Text weight="bold" size={400}>{tag}</Text>
+            {hasData ? (
+              <>
+                <Text weight="bold" size={400}>{tag}</Text>
 
-            <TagGroup size="extra-small">
-              {controls.map((control, index) => (
-                <InteractionTag key={control.id}>
-                  <InteractionTagPrimary onClick={() => scrollToContentControl(control.id)}>
-                    Voir #{index + 1}
-                  </InteractionTagPrimary>
-                </InteractionTag>
-              ))}
-            </TagGroup>
+                <div className={styles.flexRow}>
+                  <TagGroup size="extra-small" appearance="brand" className={styles.tagGroup}>
+                    <Text wrap={false}>Aller à :</Text>
 
-            <ClientSearch tag={tag} />
+                    {controls.map((control, index) => (
+                      <InteractionTag key={control.id}>
+                        <InteractionTagPrimary onClick={() => scrollToContentControl(control.id)}>
+                          <Text>#{index + 1}</Text>
+                        </InteractionTagPrimary>
+                      </InteractionTag>
+                    ))}
+                  </TagGroup>
+                </div>
+
+                <ClientSearch controls={controls} />
+              </>
+            ) : controls.map(control => (
+              <div className={styles.listItem} key={control.id}>
+                <div className={styles.flexRow}>
+                  <Text weight="bold" size={400}>{tag}</Text>
+
+                  <InteractionTag size="small" appearance="brand">
+                    <InteractionTagPrimary onClick={() => scrollToContentControl(control.id)}>
+                      <Text wrap={false}>Aller à</Text>
+                    </InteractionTagPrimary>
+                  </InteractionTag>
+                </div>
+
+                <div className={styles.inputGroup}>
+                  <Label>Remplir le contenu de la zone</Label>
+                  <ControlContentUpdateInput controlId={control.id} />
+                </div>
+              </div>
+            ))}
+
           </ListItem>
         ))}
       </List>

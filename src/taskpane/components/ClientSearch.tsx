@@ -15,6 +15,7 @@ import {
 } from '@fluentui/react-components';
 import * as React from "react";
 import { type Client, ClientType } from '../../types/Client';
+import type { TaggedControl } from '../../types/TaggedControl';
 import { insertClientData } from '../taskpane';
 
 const DEBOUNCE_MS = 300;
@@ -87,7 +88,7 @@ type SearchResult = Client
 // Simulated async search function
 const fetchResults = (query: string): Promise<SearchResult[]> => {
   const allResults: SearchResult[] = [
-    {reference: "C0001", type: ClientType.PROFESSIONAL, company: "Atelier Vermont", address: "12 rue des Lilas", cp: "75015", city: "Paris"},
+    {reference: "C0001", type: ClientType.PROFESSIONAL, company: "Atelier Vermont", email: "atelier.vermont@example.com", address: "12 rue des Lilas", cp: "75015", city: "Paris"},
     {reference: "C0002", type: ClientType.PROFESSIONAL, company: "Boulangerie Gauthier & Fils", address: "48 avenue Jean Jaurès", cp: "69007", city: "Lyon"},
     {reference: "C0003", type: ClientType.INDIVIDUAL, lastName: "Lemaire", firstName: "Pascal", address: "3 place de la Bourse", cp: "33000", city: "Bordeaux"},
     {reference: "C0004", type: ClientType.PROFESSIONAL, company: "Delmas Logistique", address: "17 zone industrielle du Port", cp: "44600", city: "Saint-Nazaire"},
@@ -122,7 +123,7 @@ const fetchResults = (query: string): Promise<SearchResult[]> => {
   });
 };
 
-const ClientSearch: React.FC<{ tag: string }> = ({ tag }) => {
+const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => {
   const styles = useStyles();
 
   const [query, setQuery] = React.useState("");
@@ -256,12 +257,12 @@ const ClientSearch: React.FC<{ tag: string }> = ({ tag }) => {
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLSpanElement>) => {
-    // Close if focus leaves both the input and the listbox
+    // Close if focus leaves both the input and the listBox
     const relatedTarget = e.relatedTarget as Node | null;
-    const listboxEl = document.getElementById(listBoxId);
+    const listBoxEl = document.getElementById(listBoxId);
     if (
       !e.currentTarget.contains(relatedTarget) &&
-      !listboxEl?.contains(relatedTarget)
+      !listBoxEl?.contains(relatedTarget)
     ) {
       setIsOpen(false);
       setFocusedIndex(-1);
@@ -269,7 +270,7 @@ const ClientSearch: React.FC<{ tag: string }> = ({ tag }) => {
   };
 
   const insertResultData = async () => {
-    await insertClientData(tag, selectedResult)
+    await insertClientData(controls, selectedResult)
   }
 
   const showDropdown = isOpen && (isLoading || results.length > 0);

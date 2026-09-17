@@ -1,23 +1,31 @@
 /* global Word console */
 
 import { type Client, clientPlaceholders } from '../types/Client';
+import {
+  type GroupedTaggedControls,
+  TAGGED_CONTROL_SEPARATOR,
+  type TaggedControl,
+} from '../types/TaggedControl';
 
 export async function tagSelection(
   tag: string,
+  data: { label: string, value: string } | null,
   type: string = Word.ContentControlType.richText,
   items: string[] = []
 ) {
   await Word.run(async (context) => {
-
-    console.log({tag, type, items});
-
     const range = context.document.getSelection();
     const contentControl = range.insertContentControl(type as any);
 
     contentControl.tag = tag;
     contentControl.title = tag;
+    contentControl.placeholderText = tag;
 
-    if (type === Word.ContentControlType.dropDownList) {
+    if (type === Word.ContentControlType.richText && !!tag && !!data) {
+      contentControl.tag = `${tag}${TAGGED_CONTROL_SEPARATOR}${data.value}`;
+      contentControl.title = `${tag} (${data.label})`;
+      contentControl.placeholderText = `${tag} (${data.label})`;
+    } else if (type === Word.ContentControlType.dropDownList) {
       for (const item of items) {
         contentControl.dropDownListContentControl.addListItem(item)
       }
@@ -29,52 +37,127 @@ export async function tagSelection(
   });
 }
 
-export interface TaggedControl {
-  id: number;
-  tag: string;
-}
-
 export async function getRichTextTaggedControls(): Promise<TaggedControl[]> {
-  return await Word.run(async (context) => {
-    const contentControls = context.document.contentControls;
-    contentControls.load("items/id,items/tag,items/type");
-    await context.sync();
+  try {
+    return await Word.run(async (context) => {
+      const contentControls = context.document.contentControls;
+      contentControls.load("items/id,items/tag,items/type");
+      await context.sync();
 
-    return contentControls.items
-      .filter(cc => cc.type === Word.ContentControlType.richText && cc.tag)
-      .map(cc => ({ id: cc.id, tag: cc.tag }));
-  });
+      return contentControls.items
+        .map(cc => {
+          if (!cc.tag || cc.type !== Word.ContentControlType.richText) return null;
+          const [tag = "", data = ""] = cc.tag.split(TAGGED_CONTROL_SEPARATOR);
+          return { id: cc.id, type: cc.type, tag, data };
+        })
+        .filter(Boolean);
+    });
+  } catch (e) {
+    console.error(e);
+    return []
+  }
 }
 
-export function groupByTag(controls: TaggedControl[]): Record<string, TaggedControl[]> {
+export function groupByTag(controls: TaggedControl[]): GroupedTaggedControls {
   return controls.reduce((groups, cc) => {
-    (groups[cc.tag] ??= []).push(cc);
+    (groups[cc.tag] ??= {controls: [], hasData: cc.data !== ""}).controls.push(cc);
     return groups;
-  }, {} as Record<string, TaggedControl[]>);
+  }, {} as Record<string, {controls: TaggedControl[], hasData: boolean}>);
 }
 
-export async function insertClientData(contentControlTag: string, client: Client) {
+export async function insertClientData(controls: TaggedControl[], client: Client) {
   await Word.run(async (context) => {
-    const contentControls = context.document.contentControls.getByTag(contentControlTag);
-
-    contentControls.load("items")
-    await context.sync();
-
-    for (let contentControl of contentControls.items) {
-      const range = contentControl.getRange();
-
-      // Search for each placeholder and replace it in place, so the paragraph
-      // keeps its existing style (we're not deleting/recreating paragraphs)
-      for (const [placeholder, replacer] of Object.entries(clientPlaceholders)) {
-        const results = range.search(placeholder, { matchCase: false });
-        results.load("items");
-        await context.sync();
-
-        results.items.forEach((found) => {
-          found.insertText(replacer(client), Word.InsertLocation.replace);
-        });
-      }
+    for (let control of controls) {
+      const contentControl = context.document.contentControls.getById(control.id);
+      contentControl.insertText(clientPlaceholders[control.data](client) ?? " ", Word.InsertLocation.replace);
     }
+  });
+}
+
+export async function scrollToContentControl(id: number) {
+  await Word.run(async (context) => {
+    const cc = context.document.contentControls.getById(id);
+    cc.select(); // selects the control's content AND scrolls it into view
     await context.sync();
   });
+}
+
+export async function updateContentControlText(id: number, data: string) {
+  await Word.run(async (context) => {
+    const control = context.document.contentControls.getById(id)
+    control.insertText(data, Word.InsertLocation.replace);
+  })
+}
+
+export async function getContentControlText(id: number): Promise<string> {
+  try {
+    return await Word.run(async (context) => {
+      const control = context.document.contentControls.getById(id);
+      const range = control.getRange();
+      range.load("text");
+      await context.sync();
+
+      return range.text;
+    });
+  } catch (e) {
+    console.error(e);
+    return "";
+  }
+}
+
+function getPdfAsBase64(): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    Office.context.document.getFileAsync(
+      Office.FileType.Pdf,
+      { sliceSize: 65536 },
+      (result) => {
+        if (result.status !== Office.AsyncResultStatus.Succeeded) {
+          reject(result.error);
+          return;
+        }
+
+        const file = result.value;
+        const sliceCount = file.sliceCount;
+        const slices: number[][] = new Array(sliceCount);
+        let receivedCount = 0;
+
+        for (let i = 0; i < sliceCount; i++) {
+          file.getSliceAsync(i, (sliceResult) => {
+            if (sliceResult.status !== Office.AsyncResultStatus.Succeeded) {
+              file.closeAsync();
+              reject(sliceResult.error);
+              return;
+            }
+
+            slices[sliceResult.value.index] = sliceResult.value.data;
+            receivedCount++;
+
+            if (receivedCount === sliceCount) {
+              file.closeAsync();
+              const merged = slices.flat();
+              resolve(new Uint8Array(merged));
+            }
+          });
+        }
+      }
+    );
+  });
+}
+
+function downloadPdf(bytes: Uint8Array, filename: string) {
+  // @ts-ignore
+  const blob = new Blob([bytes], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+export async function exportToPdf() {
+  const bytes = await getPdfAsBase64();
+  downloadPdf(bytes, "document.pdf");
 }

@@ -15,11 +15,29 @@ import {
 import * as React from "react";
 import { tagSelection } from '../taskpane';
 
-const tagTypes = [
+const tagTypeOptions = [
   { label: "Texte enrichit", value: "RichText" },
   { label: "Liste déroulante", value: "DropDownList" },
   { label: "Case à cocher", value: "CheckBox" },
   { label: "Image", value: "Picture" },
+]
+
+const tagDataOptions = [
+  {label: "-", value: ""},
+  {label: "Réference", value: "reference"},
+  {label: "Type", value: "type"},
+  {label: "Nom / Raison sociale", value: "name"},
+  {label: "Nom de l'entreprise", value: "company"},
+  {label: "SIRET", value: "siret"},
+  {label: "Prénom", value: "firstName"},
+  {label: "Nom", value: "lastName"},
+  {label: "Email", value: "email"},
+  {label: "Téléphone", value: "phone"},
+  {label: "Adresse", value: "address"},
+  {label: "Code Postal", value: "cp"},
+  {label: "Ville", value: "city"},
+  {label: "Memo", value: "note"},
+  {label: "Compte Comptable", value: "accountantId"},
 ]
 
 const useStyles = makeStyles({
@@ -45,40 +63,45 @@ const CreatePanel: React.FC = () => {
   const styles = useStyles();
 
   const tagNameInputId = useId("tag-name-input");
+  const tagDataInputId = useId("tag-data-input");
   const tagTypeInputId = useId("tag-type-input");
   const listItemsInputId = useId("tag-items-input");
 
   const [tagName, setTagName] = React.useState<string>("");
-
   const onTagNameChange = (_event: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
     setTagName(data.value);
   }
 
-  const [tagTypeSelectedOptions, setTagTypeSelectedOptions] = React.useState<string[]>([tagTypes[0].value]);
-  const [tagTypeValue, setTagTypeValue] = React.useState<string>(tagTypes[0].label);
+  const [tagDataSelectedOptions, setTagDataSelectedOptions] = React.useState<string[]>([tagDataOptions[0].value]);
+  const [tagDataValue, setTagDataValue] = React.useState<string>(tagDataOptions[0].label);
+  const onTagDataSelect = (_event: SelectionEvents, data: OptionOnSelectData) => {
+    setTagDataSelectedOptions(data.selectedOptions);
+    setTagDataValue(data.optionText ?? tagTypeOptions[0].label);
+  }
 
+  const [tagTypeSelectedOptions, setTagTypeSelectedOptions] = React.useState<string[]>([tagTypeOptions[0].value]);
+  const [tagTypeValue, setTagTypeValue] = React.useState<string>(tagTypeOptions[0].label);
   const onTagTypeSelect = (_event: SelectionEvents, data: OptionOnSelectData) => {
     setTagTypeSelectedOptions(data.selectedOptions);
-    setTagTypeValue(data.optionText ?? tagTypes[0].label);
+    setTagTypeValue(data.optionText ?? tagTypeOptions[0].label);
+
+    // Reset list items
+    setListItems([]);
+
+    // Reset tag data
+    setTagDataValue(tagDataOptions[0].label);
+    setTagDataSelectedOptions([tagDataOptions[0].value]);
   }
 
   const [listItems, setListItems] = React.useState<string[]>([]);
-
   const onListItemsChange = (_event: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
     setListItems(data.value.split(',').map((item) => item.trim()));
   }
 
   const addTagToSelection = async () => {
-    await tagSelection(tagName, tagTypeSelectedOptions[0], listItems);
-    setTagName("");
-    setListItems([]);
+    const tagData = tagDataSelectedOptions[0] ? tagDataOptions.filter(option => option.value === tagDataSelectedOptions[0])[0] : null;
+    await tagSelection(tagName, tagData, tagTypeSelectedOptions[0], listItems);
   }
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      await addTagToSelection()
-    }
-  };
 
   return (
     <div role="tabpanel" aria-labelledby="create-panel-label" className={styles.root}>
@@ -86,8 +109,26 @@ const CreatePanel: React.FC = () => {
 
       <div className={styles.inputGroup}>
         <Label htmlFor={tagNameInputId}>Nom de la zone intéractive</Label>
-        <Input id={tagNameInputId} onChange={onTagNameChange} value={tagName} onKeyDown={(e) => handleKeyDown(e)} />
+        <Input id={tagNameInputId} onChange={onTagNameChange} value={tagName} />
       </div>
+
+      {tagTypeSelectedOptions[0] === "RichText" && (
+        <div className={styles.inputGroup}>
+          <Label htmlFor={tagDataInputId}>Donnée client à insérer (optionnel)</Label>
+          <Dropdown
+            id={tagDataInputId}
+            onOptionSelect={onTagDataSelect}
+            selectedOptions={tagDataSelectedOptions}
+            value={tagDataValue}
+          >
+            {tagDataOptions.map((option) => (
+              <Option key={option.value} value={option.value}>
+                {option.label}
+              </Option>
+            ))}
+          </Dropdown>
+        </div>
+      )}
 
       <div className={styles.inputGroup}>
         <Label htmlFor={tagTypeInputId}>Type de zone intéractive (optionnel)</Label>
@@ -97,9 +138,9 @@ const CreatePanel: React.FC = () => {
           selectedOptions={tagTypeSelectedOptions}
           value={tagTypeValue}
         >
-          {tagTypes.map((tagType) => (
-            <Option key={tagType.value} value={tagType.value}>
-              {tagType.label}
+          {tagTypeOptions.map((option) => (
+            <Option key={option.value} value={option.value}>
+              {option.label}
             </Option>
           ))}
         </Dropdown>
