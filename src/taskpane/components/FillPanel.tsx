@@ -73,15 +73,13 @@ const FillPanel: React.FC = () => {
     setGroups(groupByTag(controls));
   }
 
-
-
   React.useEffect(() => {
     getRichTextTaggedControls().then(controls => setGroups(groupByTag(controls)));
   }, []);
 
   return (
-    <div role="tabpanel" aria-labelledby="fill-panel-label" className={styles.root}>
-      <Text className={styles.description}>Remplir les zones intéractives.</Text>
+    <section role="tabpanel" aria-labelledby="fill-panel-label" className={styles.root}>
+      <Text className={styles.description}>Remplir les zones interactives.</Text>
 
       <Button onClick={handleRefresh} icon={<ArrowSyncRegular />}>Mettre à jour la liste</Button>
 
@@ -134,7 +132,7 @@ const FillPanel: React.FC = () => {
           </ListItem>
         ))}
       </List>
-    </div>
+    </section>
   )
 }
 

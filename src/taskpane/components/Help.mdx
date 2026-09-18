@@ -1,0 +1,74 @@
+import { Button } from '@fluentui/react-components';
+import {
+  DocTabCreate,
+  DocTabFill,
+  DocButtonCreate,
+  DocButtonInsert,
+  DocButtonCheck,
+  DocButtonReset,
+  DocTagGoto
+} from "./DocButtons";
+
+# Comment ça marche ?
+
+Ce complément vous permet de créer des zones interactives dans vos documents Word — par exemple pour insérer automatiquement les informations d'un client — puis de les remplir facilement. Deux onglets suffisent : <DocTabCreate /> pour définir vos zones, et <DocTabFill /> pour les compléter.
+
+## Onglet "Créer"
+
+Cet onglet permet d'ajouter une **zone interactive** à l'endroit où se trouve votre curseur dans le document.
+
+### Nom de la zone
+
+Donnez un nom à votre zone. Ce nom sert à la retrouver ensuite dans l'onglet <DocTabFill />.
+
+### Type de zone interactive
+
+Choisissez le type de zone à créer :
+- **Texte enrichi** — une zone de texte classique, qui peut contenir plusieurs lignes avec des styles différents.
+- **Liste déroulante** — l'utilisateur choisit une valeur parmi une liste que vous définissez.
+- **Case à cocher** — une case que l'utilisateur peut cocher ou décocher.
+- **Image** — un emplacement réservé pour insérer une image.
+
+### Donnée client à insérer
+
+*(uniquement pour le type "Texte enrichi")*
+
+Si cette zone doit être remplie automatiquement avec une information client (nom, adresse, email...), choisissez le type d'information correspondant. Sinon, laissez ce champ vide pour une zone de texte libre classique.
+
+> **Astuce** : si vous donnez le **même nom** à plusieurs zones destinées à un même client (par exemple, plusieurs zones nommées "Destinataire" pour différentes informations), elles seront regroupées ensemble dans l'onglet <DocTabFill /> — vous n'aurez besoin de choisir le client **qu'une seule fois** pour remplir toutes les zones associées.
+
+### Options de la liste
+
+*(uniquement pour le type "Liste déroulante")*
+
+Entrez les valeurs possibles séparées par une virgule (exemple : `Oui, Non, Peut-être`).
+
+### Créer une zone interactive
+
+Cliquez sur le bouton <DocButtonCreate /> pour ajouter la zone à l'endroit sélectionné dans votre document.
+
+---
+
+## Onglet "Remplir"
+
+Cet onglet permet de compléter les zones créées, et d'exporter votre document.
+
+### Mettre à jour la liste
+
+Rafraîchit la liste ci-dessous pour qu'elle reflète les zones actuellement présentes dans le document (utile après avoir modifié le document).
+
+### Exporter en PDF
+
+Génère une version PDF de votre document, prête à être enregistrée.
+
+### La liste des zones
+
+#### Zones liées à un client
+
+Elles sont regroupées sous un même nom. Pour chacune, un lien **Aller à :** <DocTagGoto>#1</DocTagGoto>, <DocTagGoto>#2</DocTagGoto>... vous permet de la localiser dans le document. Utilisez le champ de recherche pour trouver et sélectionner un client. Une fois un client sélectionné, ses informations s'affichent, et le bouton <DocButtonInsert /> apparaît : il remplace le texte de **toutes** les zones associées à ce nom par les informations du client choisi. Vous pouvez aussi modifier le contenu de ces zones directement dans le document, mais attention : ces modifications seront perdues si vous relancez une insertion pour ce même nom.
+
+#### Zones de texte libre
+
+Un lien <DocTagGoto>Aller à</DocTagGoto> permet de les localiser dans le document. Modifiez le texte dans le champ prévu, puis cliquez sur <DocButtonCheck /> pour l'appliquer au document. Le bouton <DocButtonReset /> permet de reprendre le texte actuellement présent dans le document (utile si vous l'avez modifié directement dans Word et souhaitez le récupérer dans le champ). Vous pouvez d'ailleurs toujours écrire directement dans la zone concernée du document si vous préférez — les deux méthodes reviennent au même.
+
+> **À savoir** : les zones de type **Liste déroulante**, **Case à cocher** et **Image** ne sont pas affichées dans cette liste. Pour les remplir, cliquez directement sur la zone concernée dans le document (par exemple, cliquez sur la case pour la cocher, ou sur la liste déroulante pour choisir une valeur).

@@ -15,6 +15,7 @@ import {
 } from '@fluentui/react-components';
 import * as React from "react";
 import { type Client, ClientType, insertClientData, type TaggedControl } from '../taskpane';
+import { PersonSquareAddRegular } from '@fluentui/react-icons';
 
 const DEBOUNCE_MS = 300;
 
@@ -363,7 +364,7 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
             {selectedResult.accountantId && <ListItem className={styles.clientPreviewListItem}>Compte Comptable : <strong>{selectedResult.accountantId}</strong></ListItem>}
           </List>
 
-          <Button appearance="primary" onClick={insertResultData}>Insérer les données client</Button>
+          <Button appearance="primary" icon={<PersonSquareAddRegular />} onClick={insertResultData}>Insérer les données client</Button>
         </>
       )}
     </AriaLiveAnnouncer>

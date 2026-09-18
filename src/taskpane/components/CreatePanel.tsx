@@ -14,6 +14,7 @@ import {
 } from '@fluentui/react-components';
 import * as React from "react";
 import { tagSelection } from '../taskpane';
+import { AddSquareRegular } from '@fluentui/react-icons';
 
 const tagTypeOptions = [
   { label: "Texte enrichit", value: "RichText" },
@@ -56,6 +57,11 @@ const useStyles = makeStyles({
   description: {
     color: tokens.colorNeutralForeground3,
     fontStyle: "italic",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "1rem",
   }
 });
 
@@ -86,75 +92,78 @@ const CreatePanel: React.FC = () => {
     setTagTypeValue(data.optionText ?? tagTypeOptions[0].label);
 
     // Reset list items
-    setListItems([]);
+    setListItems("");
 
     // Reset tag data
     setTagDataValue(tagDataOptions[0].label);
     setTagDataSelectedOptions([tagDataOptions[0].value]);
   }
 
-  const [listItems, setListItems] = React.useState<string[]>([]);
+  const [listItems, setListItems] = React.useState<string>("");
   const onListItemsChange = (_event: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
-    setListItems(data.value.split(',').map((item) => item.trim()));
+    setListItems(data.value);
   }
 
   const addTagToSelection = async () => {
     const tagData = tagDataSelectedOptions[0] ? tagDataOptions.filter(option => option.value === tagDataSelectedOptions[0])[0] : null;
-    await tagSelection(tagName, tagData, tagTypeSelectedOptions[0], listItems);
+    const listItemsArray = listItems.split(',').map((item) => item.trim())
+    await tagSelection(tagName, tagData, tagTypeSelectedOptions[0], listItemsArray);
   }
 
   return (
-    <div role="tabpanel" aria-labelledby="create-panel-label" className={styles.root}>
-      <Text className={styles.description}>Créer une zone intéractive à la position du curseur.</Text>
+    <section role="tabpanel" aria-labelledby="create-panel-label" className={styles.root}>
+      <Text className={styles.description}>Créer une zone interactive à la position du curseur.</Text>
 
-      <div className={styles.inputGroup}>
-        <Label htmlFor={tagNameInputId}>Nom de la zone intéractive</Label>
-        <Input id={tagNameInputId} onChange={onTagNameChange} value={tagName} />
-      </div>
-
-      {tagTypeSelectedOptions[0] === "RichText" && (
+      <form onSubmit={addTagToSelection} className={styles.form}>
         <div className={styles.inputGroup}>
-          <Label htmlFor={tagDataInputId}>Donnée client à insérer (optionnel)</Label>
+          <Label htmlFor={tagNameInputId}>Nom de la zone</Label>
+          <Input id={tagNameInputId} onChange={onTagNameChange} value={tagName} required />
+        </div>
+
+        {tagTypeSelectedOptions[0] === "RichText" && (
+          <div className={styles.inputGroup}>
+            <Label htmlFor={tagDataInputId}>Donnée client à insérer</Label>
+            <Dropdown
+              id={tagDataInputId}
+              onOptionSelect={onTagDataSelect}
+              selectedOptions={tagDataSelectedOptions}
+              value={tagDataValue}
+            >
+              {tagDataOptions.map((option) => (
+                <Option key={option.value} value={option.value}>
+                  {option.label}
+                </Option>
+              ))}
+            </Dropdown>
+          </div>
+        )}
+
+        <div className={styles.inputGroup}>
+          <Label htmlFor={tagTypeInputId}>Type de zone</Label>
           <Dropdown
-            id={tagDataInputId}
-            onOptionSelect={onTagDataSelect}
-            selectedOptions={tagDataSelectedOptions}
-            value={tagDataValue}
+            id={tagTypeInputId}
+            onOptionSelect={onTagTypeSelect}
+            selectedOptions={tagTypeSelectedOptions}
+            value={tagTypeValue}
           >
-            {tagDataOptions.map((option) => (
+            {tagTypeOptions.map((option) => (
               <Option key={option.value} value={option.value}>
                 {option.label}
               </Option>
             ))}
           </Dropdown>
         </div>
-      )}
 
-      <div className={styles.inputGroup}>
-        <Label htmlFor={tagTypeInputId}>Type de zone intéractive (optionnel)</Label>
-        <Dropdown
-          id={tagTypeInputId}
-          onOptionSelect={onTagTypeSelect}
-          selectedOptions={tagTypeSelectedOptions}
-          value={tagTypeValue}
-        >
-          {tagTypeOptions.map((option) => (
-            <Option key={option.value} value={option.value}>
-              {option.label}
-            </Option>
-          ))}
-        </Dropdown>
-      </div>
+        {tagTypeSelectedOptions[0] === "DropDownList" && (
+          <div className={styles.inputGroup}>
+            <Label htmlFor={listItemsInputId}>Options de la liste (séparés par une virgule)</Label>
+            <Input id={listItemsInputId} onChange={onListItemsChange} placeholder="Oui, Non, Peut-être" value={listItems} required />
+          </div>
+        )}
 
-      {tagTypeSelectedOptions[0] === "DropDownList" && (
-        <div className={styles.inputGroup}>
-          <Label htmlFor={listItemsInputId}>Choix de la liste (séparés par une virgule)</Label>
-          <Input id={listItemsInputId} onChange={onListItemsChange} value={listItems.join(',')} />
-        </div>
-      )}
-
-      <Button appearance="primary" onClick={addTagToSelection}>Créer un zone intéractive</Button>
-    </div>
+        <Button appearance="primary" icon={<AddSquareRegular />} type="submit">Créer une zone interactive</Button>
+      </form>
+    </section>
   )
 }
 

@@ -1,8 +1,11 @@
 import * as React from "react";
+import Help from './Help.mdx';
 
 const HelpPanel: React.FC = () => {
   return (
-    <div role="tabpanel" aria-labelledby="help-panel-label">Help panel</div>
+    <section role="tabpanel" aria-labelledby="help-panel-label">
+      <Help />
+    </section>
   )
 }
 

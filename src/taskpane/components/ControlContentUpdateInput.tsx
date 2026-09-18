@@ -1,61 +1,55 @@
 import {
-  Input,
-  type InputOnChangeData,
-  useId,
+  Button, Input, type InputOnChangeData, makeStyles, Tooltip, useId,
 } from '@fluentui/react-components';
-import { TextTRegular } from '@fluentui/react-icons';
+import {
+  ArrowResetRegular, CheckmarkRegular, TextTRegular,
+} from '@fluentui/react-icons';
 import * as React from "react";
 import { getContentControlText, updateContentControlText } from '../taskpane';
 
-const DEBOUNCE_MS = 300;
+const getStyles = makeStyles({
+  flexRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '2px',
+  },
+  input: {
+    flexGrow: 1,
+  }
+});
 
 const ControlContentUpdateInput: React.FC<{controlId: number}> = ({controlId}) => {
+  const styles = getStyles();
+
   const inputId = useId('input-id')
 
   const [value, setValue] = React.useState<string>('');
-
-  const debounceTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Seed the input with the text already present in the content control
-  React.useEffect(() => {
-    let cancelled = false;
-
-    getContentControlText(controlId).then((text) => {
-      if (!cancelled) {
-        setValue(text);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [controlId]);
-
-  // Cancel any pending update when the component unmounts
-  React.useEffect(() => {
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, []);
-
   const onInputChange = (_: React.ChangeEvent<HTMLInputElement>, data: InputOnChangeData) => {
     setValue(data.value);
-
-    // Debounce the write to Word so we don't queue one call per keystroke
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      debounceTimerRef.current = null;
-      void updateContentControlText(controlId, data.value);
-    }, DEBOUNCE_MS);
   }
 
+  const handleInsert = async () => {
+    await updateContentControlText(controlId, value);
+  }
+
+  const handleReset = async () => {
+    const text = await getContentControlText(controlId);
+    setValue(text);
+  }
+
+  React.useEffect(() => {
+    getContentControlText(controlId).then((text) => {
+      setValue(text);
+    });
+  }, [controlId])
+
   return (
-    <Input id={inputId} contentBefore={<TextTRegular />} onChange={onInputChange} value={value} />
+    <div className={styles.flexRow}>
+      <Input id={inputId} className={styles.input} contentBefore={<TextTRegular />} contentAfter={<Tooltip content="Réinitialiser" relationship="label"><Button appearance="transparent" icon={<ArrowResetRegular />} onClick={handleReset} /></Tooltip>} onChange={onInputChange} value={value} />
+      <Tooltip content="Mettre à jour" relationship="label">
+        <Button appearance="primary" icon={<CheckmarkRegular />} onClick={handleInsert} />
+      </Tooltip>
+    </div>
   )
 }
 

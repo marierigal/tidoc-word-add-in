@@ -30,7 +30,7 @@ module.exports = async (env, options) => {
       clean: true,
     },
     resolve: {
-      extensions: [".ts", ".tsx", ".html", ".js"],
+      extensions: [".ts", ".tsx", ".html", ".js", ".mdx"],
     },
     module: {
       rules: [
@@ -58,6 +58,19 @@ module.exports = async (env, options) => {
             filename: "assets/[name][ext][query]",
           },
         },
+        {
+          test: /\.mdx$/,
+          exclude: /node_modules/,
+          use: [
+            { loader: "babel-loader" },
+            {
+              loader: "@mdx-js/loader",
+              options: {
+                providerImportSource: "@mdx-js/react"
+              }
+            },
+          ],
+        }
       ],
     },
     plugins: [

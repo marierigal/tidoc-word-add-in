@@ -1,8 +1,8 @@
-/* global Word console */
+/* global Word, Office, Blob, URL, document console */
 
 export async function tagSelection(
   tag: string,
-  data: { label: string, value: string } | null,
+  data: { label: string; value: string } | null,
   type: string = Word.ContentControlType.richText,
   items: string[] = []
 ) {
@@ -20,7 +20,7 @@ export async function tagSelection(
       contentControl.placeholderText = `${tag} (${data.label})`;
     } else if (type === Word.ContentControlType.dropDownList) {
       for (const item of items) {
-        contentControl.dropDownListContentControl.addListItem(item)
+        contentControl.dropDownListContentControl.addListItem(item);
       }
     } else if (type === Word.ContentControlType.checkBox) {
       contentControl.appearance = Word.ContentControlAppearance.hidden;
@@ -38,7 +38,7 @@ export async function getRichTextTaggedControls(): Promise<TaggedControl[]> {
       await context.sync();
 
       return contentControls.items
-        .map(cc => {
+        .map((cc) => {
           if (!cc.tag || cc.type !== Word.ContentControlType.richText) return null;
           const [tag = "", data = ""] = cc.tag.split(TAGGED_CONTROL_SEPARATOR);
           return { id: cc.id, type: cc.type, tag, data };
@@ -47,22 +47,28 @@ export async function getRichTextTaggedControls(): Promise<TaggedControl[]> {
     });
   } catch (e) {
     console.error(e);
-    return []
+    return [];
   }
 }
 
 export function groupByTag(controls: TaggedControl[]): GroupedTaggedControls {
-  return controls.reduce((groups, cc) => {
-    (groups[cc.tag] ??= {controls: [], hasData: cc.data !== ""}).controls.push(cc);
-    return groups;
-  }, {} as Record<string, {controls: TaggedControl[], hasData: boolean}>);
+  return controls.reduce(
+    (groups, cc) => {
+      (groups[cc.tag] ??= { controls: [], hasData: cc.data !== "" }).controls.push(cc);
+      return groups;
+    },
+    {} as Record<string, { controls: TaggedControl[]; hasData: boolean }>
+  );
 }
 
 export async function insertClientData(controls: TaggedControl[], client: Client) {
   await Word.run(async (context) => {
     for (let control of controls) {
       const contentControl = context.document.contentControls.getById(control.id);
-      contentControl.insertText(clientPlaceholders[control.data](client) ?? " ", Word.InsertLocation.replace);
+      contentControl.insertText(
+        clientPlaceholders[control.data](client) ?? " ",
+        Word.InsertLocation.replace
+      );
     }
   });
 }
@@ -77,9 +83,9 @@ export async function scrollToContentControl(id: number) {
 
 export async function updateContentControlText(id: number, data: string) {
   await Word.run(async (context) => {
-    const control = context.document.contentControls.getById(id)
+    const control = context.document.contentControls.getById(id);
     control.insertText(data, Word.InsertLocation.replace);
-  })
+  });
 }
 
 export async function getContentControlText(id: number): Promise<string> {
@@ -100,40 +106,36 @@ export async function getContentControlText(id: number): Promise<string> {
 
 function getPdfAsBase64(): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
-    Office.context.document.getFileAsync(
-      Office.FileType.Pdf,
-      { sliceSize: 65536 },
-      (result) => {
-        if (result.status !== Office.AsyncResultStatus.Succeeded) {
-          reject(result.error);
-          return;
-        }
-
-        const file = result.value;
-        const sliceCount = file.sliceCount;
-        const slices: number[][] = new Array(sliceCount);
-        let receivedCount = 0;
-
-        for (let i = 0; i < sliceCount; i++) {
-          file.getSliceAsync(i, (sliceResult) => {
-            if (sliceResult.status !== Office.AsyncResultStatus.Succeeded) {
-              file.closeAsync();
-              reject(sliceResult.error);
-              return;
-            }
-
-            slices[sliceResult.value.index] = sliceResult.value.data;
-            receivedCount++;
-
-            if (receivedCount === sliceCount) {
-              file.closeAsync();
-              const merged = slices.flat();
-              resolve(new Uint8Array(merged));
-            }
-          });
-        }
+    Office.context.document.getFileAsync(Office.FileType.Pdf, { sliceSize: 65536 }, (result) => {
+      if (result.status !== Office.AsyncResultStatus.Succeeded) {
+        reject(result.error);
+        return;
       }
-    );
+
+      const file = result.value;
+      const sliceCount = file.sliceCount;
+      const slices: number[][] = new Array(sliceCount);
+      let receivedCount = 0;
+
+      for (let i = 0; i < sliceCount; i++) {
+        file.getSliceAsync(i, (sliceResult) => {
+          if (sliceResult.status !== Office.AsyncResultStatus.Succeeded) {
+            file.closeAsync();
+            reject(sliceResult.error);
+            return;
+          }
+
+          slices[sliceResult.value.index] = sliceResult.value.data;
+          receivedCount++;
+
+          if (receivedCount === sliceCount) {
+            file.closeAsync();
+            const merged = slices.flat();
+            resolve(new Uint8Array(merged));
+          }
+        });
+      }
+    });
   });
 }
 
@@ -174,7 +176,7 @@ export type ClientInfo = {
   city?: string;
   note?: string;
   accountantId?: string;
-}
+};
 
 export type ProfessionalClient = ClientInfo & {
   type: ClientType.PROFESSIONAL;
@@ -190,9 +192,9 @@ export type IndividualClient = ClientInfo & {
 export type Client = ProfessionalClient | IndividualClient;
 
 export const clientPlaceholders: Record<string, (client: Client) => string> = {
-  "reference" : (client: Client) => client.reference,
-  "type" : (client: Client) => client.type,
-  "name": (client: Client) => {
+  reference: (client: Client) => client.reference,
+  type: (client: Client) => client.type,
+  name: (client: Client) => {
     if (client.type === ClientType.PROFESSIONAL) {
       return client.company;
     } else if (client.firstName) {
@@ -201,18 +203,18 @@ export const clientPlaceholders: Record<string, (client: Client) => string> = {
       return client.lastName;
     }
   },
-  "company" : (client: Client) => client.type === ClientType.PROFESSIONAL ? client.company : "",
-  "siret" : (client: Client) => client.type === ClientType.PROFESSIONAL ? client.siret : "",
-  "firstName" : (client: Client) => client.firstName,
-  "lastName" : (client: Client) => client.lastName,
-  "email" : (client: Client) => client.email,
-  "phone" : (client: Client) => client.phone,
-  "address" : (client: Client) => client.address,
-  "cp" : (client: Client) => client.cp,
-  "city" : (client: Client) => client.city,
-  "note" : (client: Client) => client.note,
-  "accountantId" : (client: Client) => client.accountantId,
-}
+  company: (client: Client) => (client.type === ClientType.PROFESSIONAL ? client.company : ""),
+  siret: (client: Client) => (client.type === ClientType.PROFESSIONAL ? client.siret : ""),
+  firstName: (client: Client) => client.firstName,
+  lastName: (client: Client) => client.lastName,
+  email: (client: Client) => client.email,
+  phone: (client: Client) => client.phone,
+  address: (client: Client) => client.address,
+  cp: (client: Client) => client.cp,
+  city: (client: Client) => client.city,
+  note: (client: Client) => client.note,
+  accountantId: (client: Client) => client.accountantId,
+};
 
 /**
  * TaggedControl
@@ -224,6 +226,6 @@ export interface TaggedControl {
   data: string;
 }
 
-export const TAGGED_CONTROL_SEPARATOR = ':';
+export const TAGGED_CONTROL_SEPARATOR = ":";
 
-export type GroupedTaggedControls = Record<string, {controls: TaggedControl[], hasData: boolean}>;
+export type GroupedTaggedControls = Record<string, { controls: TaggedControl[]; hasData: boolean }>;

@@ -32,7 +32,7 @@ const useStyles = makeStyles({
 const App: React.FC = () => {
   const styles = useStyles();
 
-  const [activePanel, setActivePanel] = React.useState<TabPanel>(TabPanel.FILL);
+  const [activePanel, setActivePanel] = React.useState<TabPanel>(TabPanel.HELP);
 
   const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
     setActivePanel(data.value as TabPanel);
@@ -50,11 +50,11 @@ const App: React.FC = () => {
         </TabList>
       </nav>
 
-      <section className={styles.panel}>
+      <div className={styles.panel}>
         {activePanel === TabPanel.FILL && <FillPanel/>}
         {activePanel === TabPanel.CREATE && <CreatePanel/>}
         {activePanel === TabPanel.HELP && <HelpPanel/>}
-      </section>
+      </div>
     </div>
   );
 };
