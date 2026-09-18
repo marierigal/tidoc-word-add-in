@@ -86,6 +86,7 @@ Office.onReady(() => {
 
 if ((module as any).hot) {
   (module as any).hot.accept("./components/App", () => {
+    /* eslint-disable-next-line @typescript-eslint/no-require-imports */
     const NextApp = require("./components/App").default;
     root?.render(NextApp);
   });

@@ -63,7 +63,7 @@ export function groupByTag(controls: TaggedControl[]): GroupedTaggedControls {
 
 export async function insertClientData(controls: TaggedControl[], client: Client) {
   await Word.run(async (context) => {
-    for (let control of controls) {
+    for (const control of controls) {
       const contentControl = context.document.contentControls.getById(control.id);
       contentControl.insertText(
         clientPlaceholders[control.data](client) ?? " ",
@@ -140,8 +140,7 @@ function getPdfAsBase64(): Promise<Uint8Array> {
 }
 
 function downloadPdf(bytes: Uint8Array, filename: string) {
-  // @ts-ignore
-  const blob = new Blob([bytes], { type: "application/pdf" });
+  const blob = new Blob([bytes as BlobPart], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
 
   const link = document.createElement("a");
