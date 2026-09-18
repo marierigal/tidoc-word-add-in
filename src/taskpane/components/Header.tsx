@@ -1,5 +1,5 @@
-import * as React from "react";
-import { Image, tokens, makeStyles } from "@fluentui/react-components";
+import { Image, makeStyles, tokens } from '@fluentui/react-components';
+import * as React from 'react';
 
 export interface HeaderProps {
   logo: string;
@@ -7,12 +7,12 @@ export interface HeaderProps {
 
 const useStyles = makeStyles({
   welcome__header: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingBottom: "2rem",
-    paddingTop: "2rem",
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: '2rem',
+    paddingTop: '2rem',
     backgroundColor: tokens.colorNeutralBackground3,
   },
   message: {

@@ -12,7 +12,8 @@ import {
   tokens,
 } from '@fluentui/react-components';
 import { ArrowSyncRegular, DocumentPdfRegular } from '@fluentui/react-icons';
-import * as React from "react";
+import * as React from 'react';
+
 import {
   exportToPdf,
   getRichTextTaggedControls,
@@ -20,46 +21,47 @@ import {
   type GroupedTaggedControls,
   scrollToContentControl,
 } from '../taskpane';
+
 import ClientSearch from './ClientSearch';
 import ControlContentUpdateInput from './ControlContentUpdateInput';
 
 const useStyles = makeStyles({
   root: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-    maxWidth: "400px",
-    paddingBottom: "200px",
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    maxWidth: '400px',
+    paddingBottom: '200px',
   },
   description: {
     color: tokens.colorNeutralForeground3,
-    fontStyle: "italic",
+    fontStyle: 'italic',
   },
   list: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
   },
   listItem: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
   },
   tagGroup: {
-    flexWrap: "wrap",
+    flexWrap: 'wrap',
     rowGap: tokens.spacingVerticalXS,
   },
   flexRow: {
-    display: "flex",
-    flexDirection: "row",
-    gap: "1rem",
-    alignItems: "baseline",
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '1rem',
+    alignItems: 'baseline',
   },
   inputGroup: {
-    display: "flex",
-    flexDirection: "column",
+    display: 'flex',
+    flexDirection: 'column',
     // Use 2px gap below the label (per the design system)
-    gap: "2px",
+    gap: '2px',
   },
 });
 
@@ -71,7 +73,7 @@ const FillPanel: React.FC = () => {
   const handleRefresh = async () => {
     const controls = await getRichTextTaggedControls();
     setGroups(groupByTag(controls));
-  }
+  };
 
   React.useEffect(() => {
     getRichTextTaggedControls().then(controls => setGroups(groupByTag(controls)));
@@ -81,9 +83,13 @@ const FillPanel: React.FC = () => {
     <section role="tabpanel" aria-labelledby="fill-panel-label" className={styles.root}>
       <Text className={styles.description}>Remplir les zones interactives.</Text>
 
-      <Button onClick={handleRefresh} icon={<ArrowSyncRegular />}>Mettre à jour la liste</Button>
+      <Button onClick={handleRefresh} icon={<ArrowSyncRegular />}>
+        Mettre à jour la liste
+      </Button>
 
-      <Button appearance="primary" onClick={exportToPdf} icon={<DocumentPdfRegular />}>Exporter en PDF</Button>
+      <Button appearance="primary" onClick={exportToPdf} icon={<DocumentPdfRegular />}>
+        Exporter en PDF
+      </Button>
 
       <List className={styles.list}>
         {Object.entries(groups).map(([tag, { controls, hasData }]) => (
@@ -92,7 +98,9 @@ const FillPanel: React.FC = () => {
 
             {hasData ? (
               <>
-                <Text weight="bold" size={400}>{tag}</Text>
+                <Text weight="bold" size={400}>
+                  {tag}
+                </Text>
 
                 <div className={styles.flexRow}>
                   <TagGroup size="extra-small" appearance="brand" className={styles.tagGroup}>
@@ -110,30 +118,33 @@ const FillPanel: React.FC = () => {
 
                 <ClientSearch controls={controls} />
               </>
-            ) : controls.map(control => (
-              <div className={styles.listItem} key={control.id}>
-                <div className={styles.flexRow}>
-                  <Text weight="bold" size={400}>{tag}</Text>
+            ) : (
+              controls.map(control => (
+                <div className={styles.listItem} key={control.id}>
+                  <div className={styles.flexRow}>
+                    <Text weight="bold" size={400}>
+                      {tag}
+                    </Text>
 
-                  <InteractionTag size="small" appearance="brand">
-                    <InteractionTagPrimary onClick={() => scrollToContentControl(control.id)}>
-                      <Text wrap={false}>Aller à</Text>
-                    </InteractionTagPrimary>
-                  </InteractionTag>
+                    <InteractionTag size="small" appearance="brand">
+                      <InteractionTagPrimary onClick={() => scrollToContentControl(control.id)}>
+                        <Text wrap={false}>Aller à</Text>
+                      </InteractionTagPrimary>
+                    </InteractionTag>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <Label>Remplir le contenu de la zone</Label>
+                    <ControlContentUpdateInput controlId={control.id} />
+                  </div>
                 </div>
-
-                <div className={styles.inputGroup}>
-                  <Label>Remplir le contenu de la zone</Label>
-                  <ControlContentUpdateInput controlId={control.id} />
-                </div>
-              </div>
-            ))}
-
+              ))
+            )}
           </ListItem>
         ))}
       </List>
     </section>
-  )
-}
+  );
+};
 
-export default FillPanel
+export default FillPanel;

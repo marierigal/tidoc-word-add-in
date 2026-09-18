@@ -1,4 +1,5 @@
-import * as React from "react";
+import * as React from 'react';
+
 import Help from './Help.mdx';
 
 const HelpPanel: React.FC = () => {
@@ -6,7 +7,7 @@ const HelpPanel: React.FC = () => {
     <section role="tabpanel" aria-labelledby="help-panel-label">
       <Help />
     </section>
-  )
-}
+  );
+};
 
-export default HelpPanel
+export default HelpPanel;

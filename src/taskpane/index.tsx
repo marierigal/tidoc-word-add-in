@@ -1,7 +1,3 @@
-import { MDXProvider } from "@mdx-js/react";
-import * as React from "react";
-import { createRoot } from "react-dom/client";
-import App from "./components/App";
 import {
   Body1,
   type BrandVariants,
@@ -16,30 +12,35 @@ import {
   Title2,
   Title3,
   tokens,
-} from "@fluentui/react-components";
+} from '@fluentui/react-components';
+import { MDXProvider } from '@mdx-js/react';
+import * as React from 'react';
+import { createRoot } from 'react-dom/client';
+
+import App from './components/App';
 
 /* global document, Office, module, require, HTMLElement */
 
-const rootElement: HTMLElement | null = document.getElementById("container");
+const rootElement: HTMLElement | null = document.getElementById('container');
 const root = rootElement ? createRoot(rootElement) : undefined;
 
 const tidocTheme: BrandVariants = {
-  10: "#020403",
-  20: "#101C18",
-  30: "#152E28",
-  40: "#193C33",
-  50: "#1B4A3E",
-  60: "#1D584A",
-  70: "#1F6757",
-  80: "#1F7663",
-  90: "#1F8670",
-  100: "#1E957D",
-  110: "#1CA68A",
-  120: "#18B698",
-  130: "#55C2A8",
-  140: "#7BCFB8",
-  150: "#9DDBC9",
-  160: "#BDE6DA",
+  10: '#020403',
+  20: '#101c18',
+  30: '#152e28',
+  40: '#193c33',
+  50: '#1b4a3e',
+  60: '#1d584a',
+  70: '#1f6757',
+  80: '#1f7663',
+  90: '#1f8670',
+  100: '#1e957d',
+  110: '#1ca68a',
+  120: '#18b698',
+  130: '#55c2a8',
+  140: '#7bcfb8',
+  150: '#9ddbc9',
+  160: '#bde6da',
 };
 const tidocLightTheme: Theme = {
   ...createLightTheme(tidocTheme),
@@ -58,7 +59,7 @@ const mdxComponents = {
       style={{
         fontFamily: tokens.fontFamilyMonospace,
         backgroundColor: tokens.colorNeutralBackground3,
-        padding: "2px 4px",
+        padding: '2px 4px',
         borderRadius: tokens.borderRadiusSmall,
       }}
       {...props}
@@ -85,9 +86,9 @@ Office.onReady(() => {
 });
 
 if ((module as any).hot) {
-  (module as any).hot.accept("./components/App", () => {
+  (module as any).hot.accept('./components/App', () => {
     /* eslint-disable-next-line @typescript-eslint/no-require-imports */
-    const NextApp = require("./components/App").default;
+    const NextApp = require('./components/App').default;
     root?.render(NextApp);
   });
 }

@@ -1,7 +1,3 @@
-import * as React from "react";
-import FillPanel from './FillPanel';
-import Header from "./Header";
-import CreatePanel from './CreatePanel';
 import {
   makeStyles,
   type SelectTabData,
@@ -9,9 +5,12 @@ import {
   Tab,
   TabList,
 } from '@fluentui/react-components';
-import {
-  ChatHelpRegular, DocumentEditRegular, TagAddRegular,
-} from '@fluentui/react-icons';
+import { ChatHelpRegular, DocumentEditRegular, TagAddRegular } from '@fluentui/react-icons';
+import * as React from 'react';
+
+import CreatePanel from './CreatePanel';
+import FillPanel from './FillPanel';
+import Header from './Header';
 import HelpPanel from './HelpPanel';
 
 enum TabPanel {
@@ -22,11 +21,11 @@ enum TabPanel {
 
 const useStyles = makeStyles({
   root: {
-    minHeight: "100vh",
+    minHeight: '100vh',
   },
   panel: {
-    padding: "1rem",
-  }
+    padding: '1rem',
+  },
 });
 
 const App: React.FC = () => {
@@ -36,7 +35,7 @@ const App: React.FC = () => {
 
   const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
     setActivePanel(data.value as TabPanel);
-  }
+  };
 
   return (
     <div className={styles.root}>
@@ -44,16 +43,22 @@ const App: React.FC = () => {
 
       <nav>
         <TabList selectedValue={activePanel} onTabSelect={onTabSelect}>
-          <Tab id="fill-panel-label" icon={<DocumentEditRegular />} value={TabPanel.FILL}>Remplir</Tab>
-          <Tab id="create-panel-label" icon={<TagAddRegular />} value={TabPanel.CREATE}>Créer</Tab>
-          <Tab id="help-panel-label" icon={<ChatHelpRegular />} value={TabPanel.HELP}>Aide</Tab>
+          <Tab id="fill-panel-label" icon={<DocumentEditRegular />} value={TabPanel.FILL}>
+            Remplir
+          </Tab>
+          <Tab id="create-panel-label" icon={<TagAddRegular />} value={TabPanel.CREATE}>
+            Créer
+          </Tab>
+          <Tab id="help-panel-label" icon={<ChatHelpRegular />} value={TabPanel.HELP}>
+            Aide
+          </Tab>
         </TabList>
       </nav>
 
       <div className={styles.panel}>
-        {activePanel === TabPanel.FILL && <FillPanel/>}
-        {activePanel === TabPanel.CREATE && <CreatePanel/>}
-        {activePanel === TabPanel.HELP && <HelpPanel/>}
+        {activePanel === TabPanel.FILL && <FillPanel />}
+        {activePanel === TabPanel.CREATE && <CreatePanel />}
+        {activePanel === TabPanel.HELP && <HelpPanel />}
       </div>
     </div>
   );

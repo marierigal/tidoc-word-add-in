@@ -13,53 +13,54 @@ import {
   useId,
   useTypingAnnounce,
 } from '@fluentui/react-components';
-import * as React from "react";
-import { type Client, ClientType, insertClientData, type TaggedControl } from '../taskpane';
 import { PersonSquareAddRegular } from '@fluentui/react-icons';
+import * as React from 'react';
+
+import { type Client, ClientType, insertClientData, type TaggedControl } from '../taskpane';
 
 const DEBOUNCE_MS = 300;
 
 const useStyles = makeStyles({
   root: {
-    position: "relative",
-    maxWidth: "400px",
+    position: 'relative',
+    maxWidth: '400px',
   },
   searchBox: {
-    width: "100%",
+    width: '100%',
   },
   listBox: {
     backgroundColor: tokens.colorNeutralBackground1,
     border: `1px solid ${tokens.colorNeutralStroke1}`,
     borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow16,
-    boxSizing: "border-box",
-    listStyleType: "none",
+    boxSizing: 'border-box',
+    listStyleType: 'none',
     margin: 0,
     padding: `${tokens.spacingVerticalXS} 0`,
-    position: "absolute",
-    width: "100%",
+    position: 'absolute',
+    width: '100%',
     zIndex: 1000,
   },
   listBoxHidden: {
-    display: "none",
+    display: 'none',
   },
   option: {
-    alignItems: "center",
-    cursor: "pointer",
-    display: "flex",
+    alignItems: 'center',
+    cursor: 'pointer',
+    display: 'flex',
     gap: tokens.spacingHorizontalS,
     padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
-    ":hover": {
+    ':hover': {
       backgroundColor: tokens.colorNeutralBackground1Hover,
     },
   },
   optionFocused: {
     backgroundColor: tokens.colorNeutralBackground1Selected,
-    outline: "none",
+    outline: 'none',
   },
   spinnerWrapper: {
-    alignItems: "center",
-    display: "flex",
+    alignItems: 'center',
+    display: 'flex',
     gap: tokens.spacingHorizontalS,
     padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
     color: tokens.colorNeutralForeground3,
@@ -69,54 +70,129 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
   },
   clientPreviewList: {
-    display: "grid",
-    gridTemplateColumns: "auto 1fr",
-    columnGap: "1rem",
+    display: 'grid',
+    gridTemplateColumns: 'auto 1fr',
+    columnGap: '1rem',
     backgroundColor: tokens.colorNeutralBackground3,
     padding: tokens.spacingVerticalS,
   },
   clientPreviewListItem: {
-    display: "grid",
-    gridColumn: "1 / -1",
-    gridTemplateColumns: "subgrid",
-  }
+    display: 'grid',
+    gridColumn: '1 / -1',
+    gridTemplateColumns: 'subgrid',
+  },
 });
 
-type SearchResult = Client
+type SearchResult = Client;
 
 // Simulated async search function
 const fetchResults = (query: string): Promise<SearchResult[]> => {
   const allResults: SearchResult[] = [
-    {reference: "C0001", type: ClientType.PROFESSIONAL, company: "Atelier Vermont", email: "atelier.vermont@example.com", address: "12 rue des Lilas", cp: "75015", city: "Paris"},
-    {reference: "C0002", type: ClientType.PROFESSIONAL, company: "Boulangerie Gauthier & Fils", address: "48 avenue Jean Jaurès", cp: "69007", city: "Lyon"},
-    {reference: "C0003", type: ClientType.INDIVIDUAL, lastName: "Lemaire", firstName: "Pascal", address: "3 place de la Bourse", cp: "33000", city: "Bordeaux"},
-    {reference: "C0004", type: ClientType.PROFESSIONAL, company: "Delmas Logistique", address: "17 zone industrielle du Port", cp: "44600", city: "Saint-Nazaire"},
-    {reference: "C0005", type: ClientType.INDIVIDUAL, lastName: "Dubreuil", address: "9 quai Saint-Antoine", cp: "69002", city: "Lyon"},
-    {reference: "C0006", type: ClientType.PROFESSIONAL, company: "Fontaine Architecture", address: "22 boulevard Victor Hugo", cp: "06000", city: "Nice"},
-    {reference: "C0007", type: ClientType.PROFESSIONAL, company: "Groupe Solaris Énergie", address: "5 allée des Cèdres", cp: "31000", city: "Toulouse"},
-    {reference: "C0008", type: ClientType.INDIVIDUAL, lastName: "Rivoire", firstName: "Jean", address: "74 rue de la Soie", cp: "42000", city: "Saint-Étienne"},
-    {reference: "C0009", type: ClientType.PROFESSIONAL, company: "Novatek Systèmes", address: "1 parc technologique", cp: "38000", city: "Grenoble"},
-    {reference: "C0010", type: ClientType.PROFESSIONAL, company: "Verrerie du Nord", address: "60 rue des Fonderies", cp: "59000", city: "Lille"},
+    {
+      reference: 'C0001',
+      type: ClientType.PROFESSIONAL,
+      company: 'Atelier Vermont',
+      email: 'atelier.vermont@example.com',
+      address: '12 rue des Lilas',
+      cp: '75015',
+      city: 'Paris',
+    },
+    {
+      reference: 'C0002',
+      type: ClientType.PROFESSIONAL,
+      company: 'Boulangerie Gauthier & Fils',
+      address: '48 avenue Jean Jaurès',
+      cp: '69007',
+      city: 'Lyon',
+    },
+    {
+      reference: 'C0003',
+      type: ClientType.INDIVIDUAL,
+      lastName: 'Lemaire',
+      firstName: 'Pascal',
+      address: '3 place de la Bourse',
+      cp: '33000',
+      city: 'Bordeaux',
+    },
+    {
+      reference: 'C0004',
+      type: ClientType.PROFESSIONAL,
+      company: 'Delmas Logistique',
+      address: '17 zone industrielle du Port',
+      cp: '44600',
+      city: 'Saint-Nazaire',
+    },
+    {
+      reference: 'C0005',
+      type: ClientType.INDIVIDUAL,
+      lastName: 'Dubreuil',
+      address: '9 quai Saint-Antoine',
+      cp: '69002',
+      city: 'Lyon',
+    },
+    {
+      reference: 'C0006',
+      type: ClientType.PROFESSIONAL,
+      company: 'Fontaine Architecture',
+      address: '22 boulevard Victor Hugo',
+      cp: '06000',
+      city: 'Nice',
+    },
+    {
+      reference: 'C0007',
+      type: ClientType.PROFESSIONAL,
+      company: 'Groupe Solaris Énergie',
+      address: '5 allée des Cèdres',
+      cp: '31000',
+      city: 'Toulouse',
+    },
+    {
+      reference: 'C0008',
+      type: ClientType.INDIVIDUAL,
+      lastName: 'Rivoire',
+      firstName: 'Jean',
+      address: '74 rue de la Soie',
+      cp: '42000',
+      city: 'Saint-Étienne',
+    },
+    {
+      reference: 'C0009',
+      type: ClientType.PROFESSIONAL,
+      company: 'Novatek Systèmes',
+      address: '1 parc technologique',
+      cp: '38000',
+      city: 'Grenoble',
+    },
+    {
+      reference: 'C0010',
+      type: ClientType.PROFESSIONAL,
+      company: 'Verrerie du Nord',
+      address: '60 rue des Fonderies',
+      cp: '59000',
+      city: 'Lille',
+    },
   ];
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(() => {
       const normalized = query.toLowerCase();
       resolve(
-        allResults.filter(
-          (result) => {
-            if (result.type === ClientType.PROFESSIONAL) {
-              return result.reference.toLowerCase().includes(normalized) ||
-                result.company.toLowerCase().includes(normalized) ||
-                result.email?.toLowerCase().includes(normalized)
-            } else {
-              return result.reference.toLowerCase().includes(normalized) ||
-                result.lastName.toLowerCase().includes(normalized) ||
-                result.firstName?.toLowerCase().includes(normalized) ||
-                result.email?.toLowerCase().includes(normalized)
-            }
+        allResults.filter(result => {
+          if (result.type === ClientType.PROFESSIONAL) {
+            return (
+              result.reference.toLowerCase().includes(normalized) ||
+              result.company.toLowerCase().includes(normalized) ||
+              result.email?.toLowerCase().includes(normalized)
+            );
+          } else {
+            return (
+              result.reference.toLowerCase().includes(normalized) ||
+              result.lastName.toLowerCase().includes(normalized) ||
+              result.firstName?.toLowerCase().includes(normalized) ||
+              result.email?.toLowerCase().includes(normalized)
+            );
           }
-        )
+        })
       );
     }, 500);
   });
@@ -125,7 +201,7 @@ const fetchResults = (query: string): Promise<SearchResult[]> => {
 const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => {
   const styles = useStyles();
 
-  const [query, setQuery] = React.useState("");
+  const [query, setQuery] = React.useState('');
   const [results, setResults] = React.useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
@@ -135,7 +211,7 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
   const [selectedResult, setSelectedResult] = React.useState<SearchResult | null>(null);
 
   const listBoxId = useId();
-  const announceId = useId("typeahead");
+  const announceId = useId('typeahead');
   const { typingAnnounce, inputRef } = useTypingAnnounce<HTMLInputElement>();
   const optionRefs = React.useRef<(HTMLLIElement | null)[]>([]);
   const cancelRef = React.useRef<(() => void) | null>(null);
@@ -155,7 +231,7 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
 
     const debounceTimer = setTimeout(() => {
       let cancelled = false;
-      fetchResults(query).then((data) => {
+      fetchResults(query).then(data => {
         if (!cancelled) {
           setResults(data);
           optionRefs.current = new Array(data.length).fill(null);
@@ -182,28 +258,18 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
     }
 
     if (results.length > 0) {
-      typingAnnounce(
-        `${results.length} result${results.length !== 1 ? "s" : ""} available`,
-        {
-          batchId: announceId,
-        }
-      );
+      typingAnnounce(`${results.length} result${results.length !== 1 ? 's' : ''} available`, {
+        batchId: announceId,
+      });
     } else if (query.length > 0) {
-      typingAnnounce("Aucun résultat trouvé", { batchId: announceId });
+      typingAnnounce('Aucun résultat trouvé', { batchId: announceId });
     }
-  }, [
-    isLoading,
-    isOpen,
-    results.length,
-    query.length,
-    typingAnnounce,
-    announceId,
-  ]);
+  }, [isLoading, isOpen, results.length, query.length, typingAnnounce, announceId]);
 
   // Keep focused option scrolled into view
   React.useEffect(() => {
     if (focusedIndex >= 0) {
-      optionRefs.current[focusedIndex]?.scrollIntoView({ block: "nearest" });
+      optionRefs.current[focusedIndex]?.scrollIntoView({ block: 'nearest' });
     }
   }, [focusedIndex]);
 
@@ -217,12 +283,12 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
 
     // useTypingAnnounce waits until the user pauses typing before announcing,
     // preventing interference with screen reader keyboard echo.
-    typingAnnounce("Recherche en cours…", { batchId: announceId });
+    typingAnnounce('Recherche en cours…', { batchId: announceId });
   };
 
   const handleSelect = (result: SearchResult) => {
     setSelectedId(result.reference);
-    setQuery("");
+    setQuery('');
     setIsOpen(false);
     setFocusedIndex(-1);
     // inputRef.current?.focus();
@@ -234,20 +300,20 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
       return;
     }
 
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
       setHideActiveDescendant(false);
-      setFocusedIndex((prev) => Math.min(prev + 1, results.length - 1));
-    } else if (e.key === "ArrowUp") {
+      setFocusedIndex(prev => Math.min(prev + 1, results.length - 1));
+    } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setHideActiveDescendant(false);
-      setFocusedIndex((prev) => Math.max(prev - 1, -1));
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      setFocusedIndex(prev => Math.max(prev - 1, -1));
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       setHideActiveDescendant(true);
-    } else if (e.key === "Enter" && focusedIndex >= 0) {
+    } else if (e.key === 'Enter' && focusedIndex >= 0) {
       e.preventDefault();
       handleSelect(results[focusedIndex]);
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       setIsOpen(false);
       setFocusedIndex(-1);
       setHideActiveDescendant(false);
@@ -258,26 +324,20 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
     // Close if focus leaves both the input and the listBox
     const relatedTarget = e.relatedTarget as Node | null;
     const listBoxEl = document.getElementById(listBoxId);
-    if (
-      !e.currentTarget.contains(relatedTarget) &&
-      !listBoxEl?.contains(relatedTarget)
-    ) {
+    if (!e.currentTarget.contains(relatedTarget) && !listBoxEl?.contains(relatedTarget)) {
       setIsOpen(false);
       setFocusedIndex(-1);
     }
   };
 
   const insertResultData = async () => {
-    await insertClientData(controls, selectedResult)
-  }
+    await insertClientData(controls, selectedResult);
+  };
 
   const showDropdown = isOpen && (isLoading || results.length > 0);
-  const noResults =
-    isOpen && !isLoading && query.length > 0 && results.length === 0;
+  const noResults = isOpen && !isLoading && query.length > 0 && results.length === 0;
   const activedescendant =
-    focusedIndex >= 0 && !hideActiveDescendant
-      ? `${listBoxId}-option-${focusedIndex}`
-      : undefined;
+    focusedIndex >= 0 && !hideActiveDescendant ? `${listBoxId}-option-${focusedIndex}` : undefined;
 
   return (
     <AriaLiveAnnouncer>
@@ -307,18 +367,14 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
         >
           {isLoading ? (
             <li className={styles.spinnerWrapper}>
-              <Spinner
-                size="tiny"
-                label="Chargement des résultats..."
-                labelPosition="after"
-              />
+              <Spinner size="tiny" label="Chargement des résultats..." labelPosition="after" />
             </li>
           ) : results.length > 0 ? (
             results.map((result, index) => (
               <li
                 key={result.reference}
                 id={`${listBoxId}-option-${index}`}
-                ref={(el) => {
+                ref={el => {
                   optionRefs.current[index] = el;
                 }}
                 role="option"
@@ -327,7 +383,7 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
                   styles.option,
                   focusedIndex === index && styles.optionFocused
                 )}
-                onMouseDown={(e) => {
+                onMouseDown={e => {
                   // Prevent input blur before click registers
                   e.preventDefault();
                 }}
@@ -345,25 +401,71 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
       {selectedResult && (
         <>
           <List className={styles.clientPreviewList}>
-            <ListItem className={styles.clientPreviewListItem}>Référence : <strong>{selectedResult.reference}</strong></ListItem>
+            <ListItem className={styles.clientPreviewListItem}>
+              Référence : <strong>{selectedResult.reference}</strong>
+            </ListItem>
             {selectedResult.type === ClientType.PROFESSIONAL && (
               <>
-                <ListItem className={styles.clientPreviewListItem}>Nom de l'entreprise : <strong>{selectedResult.company}</strong></ListItem>
-                {selectedResult.siret && <ListItem className={styles.clientPreviewListItem}>SIRET : <strong>{selectedResult.siret}</strong></ListItem>}
+                <ListItem className={styles.clientPreviewListItem}>
+                  Nom de l'entreprise : <strong>{selectedResult.company}</strong>
+                </ListItem>
+                {selectedResult.siret && (
+                  <ListItem className={styles.clientPreviewListItem}>
+                    SIRET : <strong>{selectedResult.siret}</strong>
+                  </ListItem>
+                )}
               </>
             )}
-            {selectedResult.firstName && <ListItem className={styles.clientPreviewListItem}>Prénom : <strong>{selectedResult.firstName}</strong></ListItem>}
-            {selectedResult.lastName && <ListItem className={styles.clientPreviewListItem}>Nom : <strong>{selectedResult.lastName}</strong></ListItem>}
-            {selectedResult.email && <ListItem className={styles.clientPreviewListItem}>Email : <strong>{selectedResult.email}</strong></ListItem>}
-            {selectedResult.phone && <ListItem className={styles.clientPreviewListItem}>Téléphone : <strong>{selectedResult.phone}</strong></ListItem>}
-            {selectedResult.address && <ListItem className={styles.clientPreviewListItem}>Adresse : <strong>{selectedResult.address}</strong></ListItem>}
-            {selectedResult.cp && <ListItem className={styles.clientPreviewListItem}>Code Postal : <strong>{selectedResult.cp}</strong></ListItem>}
-            {selectedResult.city && <ListItem className={styles.clientPreviewListItem}>Ville : <strong>{selectedResult.city}</strong></ListItem>}
-            {selectedResult.note && <ListItem className={styles.clientPreviewListItem}>Note : <strong>{selectedResult.note}</strong></ListItem>}
-            {selectedResult.accountantId && <ListItem className={styles.clientPreviewListItem}>Compte Comptable : <strong>{selectedResult.accountantId}</strong></ListItem>}
+            {selectedResult.firstName && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Prénom : <strong>{selectedResult.firstName}</strong>
+              </ListItem>
+            )}
+            {selectedResult.lastName && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Nom : <strong>{selectedResult.lastName}</strong>
+              </ListItem>
+            )}
+            {selectedResult.email && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Email : <strong>{selectedResult.email}</strong>
+              </ListItem>
+            )}
+            {selectedResult.phone && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Téléphone : <strong>{selectedResult.phone}</strong>
+              </ListItem>
+            )}
+            {selectedResult.address && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Adresse : <strong>{selectedResult.address}</strong>
+              </ListItem>
+            )}
+            {selectedResult.cp && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Code Postal : <strong>{selectedResult.cp}</strong>
+              </ListItem>
+            )}
+            {selectedResult.city && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Ville : <strong>{selectedResult.city}</strong>
+              </ListItem>
+            )}
+            {selectedResult.note && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Note : <strong>{selectedResult.note}</strong>
+              </ListItem>
+            )}
+            {selectedResult.accountantId && (
+              <ListItem className={styles.clientPreviewListItem}>
+                Compte Comptable : <strong>{selectedResult.accountantId}</strong>
+              </ListItem>
+            )}
           </List>
 
-          <Button appearance="primary" icon={<PersonSquareAddRegular />} onClick={insertResultData}>Insérer les données client</Button>
+          <Button appearance="primary" icon={<PersonSquareAddRegular />} onClick={insertResultData}>
+            Insérer les données client
+          </Button>
         </>
       )}
     </AriaLiveAnnouncer>

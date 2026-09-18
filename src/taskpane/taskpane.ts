@@ -6,7 +6,7 @@ export async function tagSelection(
   type: string = Word.ContentControlType.richText,
   items: string[] = []
 ) {
-  await Word.run(async (context) => {
+  await Word.run(async context => {
     const range = context.document.getSelection();
     const contentControl = range.insertContentControl(type as any);
 
@@ -32,15 +32,15 @@ export async function tagSelection(
 
 export async function getRichTextTaggedControls(): Promise<TaggedControl[]> {
   try {
-    return await Word.run(async (context) => {
+    return await Word.run(async context => {
       const contentControls = context.document.contentControls;
-      contentControls.load("items/id,items/tag,items/type");
+      contentControls.load('items/id,items/tag,items/type');
       await context.sync();
 
       return contentControls.items
-        .map((cc) => {
+        .map(cc => {
           if (!cc.tag || cc.type !== Word.ContentControlType.richText) return null;
-          const [tag = "", data = ""] = cc.tag.split(TAGGED_CONTROL_SEPARATOR);
+          const [tag = '', data = ''] = cc.tag.split(TAGGED_CONTROL_SEPARATOR);
           return { id: cc.id, type: cc.type, tag, data };
         })
         .filter(Boolean);
@@ -54,7 +54,7 @@ export async function getRichTextTaggedControls(): Promise<TaggedControl[]> {
 export function groupByTag(controls: TaggedControl[]): GroupedTaggedControls {
   return controls.reduce(
     (groups, cc) => {
-      (groups[cc.tag] ??= { controls: [], hasData: cc.data !== "" }).controls.push(cc);
+      (groups[cc.tag] ??= { controls: [], hasData: cc.data !== '' }).controls.push(cc);
       return groups;
     },
     {} as Record<string, { controls: TaggedControl[]; hasData: boolean }>
@@ -62,11 +62,11 @@ export function groupByTag(controls: TaggedControl[]): GroupedTaggedControls {
 }
 
 export async function insertClientData(controls: TaggedControl[], client: Client) {
-  await Word.run(async (context) => {
+  await Word.run(async context => {
     for (const control of controls) {
       const contentControl = context.document.contentControls.getById(control.id);
       contentControl.insertText(
-        clientPlaceholders[control.data](client) ?? " ",
+        clientPlaceholders[control.data](client) ?? ' ',
         Word.InsertLocation.replace
       );
     }
@@ -74,7 +74,7 @@ export async function insertClientData(controls: TaggedControl[], client: Client
 }
 
 export async function scrollToContentControl(id: number) {
-  await Word.run(async (context) => {
+  await Word.run(async context => {
     const cc = context.document.contentControls.getById(id);
     cc.select(); // selects the control's content AND scrolls it into view
     await context.sync();
@@ -82,7 +82,7 @@ export async function scrollToContentControl(id: number) {
 }
 
 export async function updateContentControlText(id: number, data: string) {
-  await Word.run(async (context) => {
+  await Word.run(async context => {
     const control = context.document.contentControls.getById(id);
     control.insertText(data, Word.InsertLocation.replace);
   });
@@ -90,23 +90,23 @@ export async function updateContentControlText(id: number, data: string) {
 
 export async function getContentControlText(id: number): Promise<string> {
   try {
-    return await Word.run(async (context) => {
+    return await Word.run(async context => {
       const control = context.document.contentControls.getById(id);
       const range = control.getRange();
-      range.load("text");
+      range.load('text');
       await context.sync();
 
       return range.text;
     });
   } catch (e) {
     console.error(e);
-    return "";
+    return '';
   }
 }
 
 function getPdfAsBase64(): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
-    Office.context.document.getFileAsync(Office.FileType.Pdf, { sliceSize: 65536 }, (result) => {
+    Office.context.document.getFileAsync(Office.FileType.Pdf, { sliceSize: 65536 }, result => {
       if (result.status !== Office.AsyncResultStatus.Succeeded) {
         reject(result.error);
         return;
@@ -118,7 +118,7 @@ function getPdfAsBase64(): Promise<Uint8Array> {
       let receivedCount = 0;
 
       for (let i = 0; i < sliceCount; i++) {
-        file.getSliceAsync(i, (sliceResult) => {
+        file.getSliceAsync(i, sliceResult => {
           if (sliceResult.status !== Office.AsyncResultStatus.Succeeded) {
             file.closeAsync();
             reject(sliceResult.error);
@@ -140,10 +140,10 @@ function getPdfAsBase64(): Promise<Uint8Array> {
 }
 
 function downloadPdf(bytes: Uint8Array, filename: string) {
-  const blob = new Blob([bytes as BlobPart], { type: "application/pdf" });
+  const blob = new Blob([bytes as BlobPart], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
 
-  const link = document.createElement("a");
+  const link = document.createElement('a');
   link.href = url;
   link.download = filename;
   link.click();
@@ -153,15 +153,15 @@ function downloadPdf(bytes: Uint8Array, filename: string) {
 
 export async function exportToPdf() {
   const bytes = await getPdfAsBase64();
-  downloadPdf(bytes, "document.pdf");
+  downloadPdf(bytes, 'document.pdf');
 }
 
 /**
  * Client
  */
 export enum ClientType {
-  PROFESSIONAL = "Professionnel",
-  INDIVIDUAL = "Particulier",
+  PROFESSIONAL = 'Professionnel',
+  INDIVIDUAL = 'Particulier',
 }
 
 export type ClientInfo = {
@@ -202,8 +202,8 @@ export const clientPlaceholders: Record<string, (client: Client) => string> = {
       return client.lastName;
     }
   },
-  company: (client: Client) => (client.type === ClientType.PROFESSIONAL ? client.company : ""),
-  siret: (client: Client) => (client.type === ClientType.PROFESSIONAL ? client.siret : ""),
+  company: (client: Client) => (client.type === ClientType.PROFESSIONAL ? client.company : ''),
+  siret: (client: Client) => (client.type === ClientType.PROFESSIONAL ? client.siret : ''),
   firstName: (client: Client) => client.firstName,
   lastName: (client: Client) => client.lastName,
   email: (client: Client) => client.email,
@@ -225,6 +225,6 @@ export interface TaggedControl {
   data: string;
 }
 
-export const TAGGED_CONTROL_SEPARATOR = ":";
+export const TAGGED_CONTROL_SEPARATOR = ':';
 
 export type GroupedTaggedControls = Record<string, { controls: TaggedControl[]; hasData: boolean }>;
