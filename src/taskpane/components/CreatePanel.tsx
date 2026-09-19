@@ -14,6 +14,7 @@ import {
   useId,
 } from '@fluentui/react-components';
 import { AddSquareRegular } from '@fluentui/react-icons';
+import type { FormEvent } from 'react';
 import * as React from 'react';
 
 import { useAsyncAction } from '../../hooks/useAsyncAction';
@@ -121,10 +122,13 @@ const CreatePanel: React.FC = () => {
     setListItems(data.value);
   };
 
-  const addTagToSelection = async () => {
+  const addTagToSelection = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
     const tagData = tagDataSelectedOptions[0]
       ? tagDataOptions.filter(option => option.value === tagDataSelectedOptions[0])[0]
       : null;
+
     const listItemsArray = listItems.split(',').map(item => item.trim());
 
     await create(tagName, tagData, tagTypeSelectedOptions[0], listItemsArray);
