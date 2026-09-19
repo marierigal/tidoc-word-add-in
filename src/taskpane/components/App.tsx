@@ -31,7 +31,7 @@ const useStyles = makeStyles({
 const App: React.FC = () => {
   const styles = useStyles();
 
-  const [activePanel, setActivePanel] = React.useState<TabPanel>(TabPanel.HELP);
+  const [activePanel, setActivePanel] = React.useState<TabPanel>(TabPanel.FILL);
 
   const onTabSelect = (_event: SelectTabEvent, data: SelectTabData) => {
     setActivePanel(data.value as TabPanel);

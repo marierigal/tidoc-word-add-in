@@ -8,6 +8,7 @@ import {
   Option,
   type OptionOnSelectData,
   type SelectionEvents,
+  Spinner,
   Text,
   tokens,
   useId,
@@ -15,13 +16,17 @@ import {
 import { AddSquareRegular } from '@fluentui/react-icons';
 import * as React from 'react';
 
-import { tagSelection } from '../taskpane';
+import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { ContentControlsService } from '../../services/word/ContentControlsService';
+import type { ContentControlType } from '../../types/ContentControlType';
 
-const tagTypeOptions = [
-  { label: 'Texte enrichit', value: 'RichText' },
-  { label: 'Liste déroulante', value: 'DropDownList' },
-  { label: 'Case à cocher', value: 'CheckBox' },
-  { label: 'Image', value: 'Picture' },
+import ErrorText from './ErrorText';
+
+const tagTypeOptions: { label: string; value: ContentControlType }[] = [
+  { label: 'Texte enrichit', value: Word.ContentControlType.richText },
+  { label: 'Liste déroulante', value: Word.ContentControlType.dropDownList },
+  { label: 'Case à cocher', value: Word.ContentControlType.checkBox },
+  { label: 'Image', value: Word.ContentControlType.picture },
 ];
 
 const tagDataOptions = [
@@ -57,7 +62,6 @@ const useStyles = makeStyles({
   },
   description: {
     color: tokens.colorNeutralForeground3,
-    fontStyle: 'italic',
   },
   form: {
     display: 'flex',
@@ -73,6 +77,8 @@ const CreatePanel: React.FC = () => {
   const tagDataInputId = useId('tag-data-input');
   const tagTypeInputId = useId('tag-type-input');
   const listItemsInputId = useId('tag-items-input');
+
+  const { run: create, error, isLoading } = useAsyncAction(ContentControlsService.create);
 
   const [tagName, setTagName] = React.useState<string>('');
   const onTagNameChange = (
@@ -91,12 +97,12 @@ const CreatePanel: React.FC = () => {
     setTagDataValue(data.optionText ?? tagTypeOptions[0].label);
   };
 
-  const [tagTypeSelectedOptions, setTagTypeSelectedOptions] = React.useState<string[]>([
+  const [tagTypeSelectedOptions, setTagTypeSelectedOptions] = React.useState<ContentControlType[]>([
     tagTypeOptions[0].value,
   ]);
   const [tagTypeValue, setTagTypeValue] = React.useState<string>(tagTypeOptions[0].label);
   const onTagTypeSelect = (_event: SelectionEvents, data: OptionOnSelectData) => {
-    setTagTypeSelectedOptions(data.selectedOptions);
+    setTagTypeSelectedOptions(data.selectedOptions as ContentControlType[]);
     setTagTypeValue(data.optionText ?? tagTypeOptions[0].label);
 
     // Reset list items
@@ -120,12 +126,13 @@ const CreatePanel: React.FC = () => {
       ? tagDataOptions.filter(option => option.value === tagDataSelectedOptions[0])[0]
       : null;
     const listItemsArray = listItems.split(',').map(item => item.trim());
-    await tagSelection(tagName, tagData, tagTypeSelectedOptions[0], listItemsArray);
+
+    await create(tagName, tagData, tagTypeSelectedOptions[0], listItemsArray);
   };
 
   return (
     <section role="tabpanel" aria-labelledby="create-panel-label" className={styles.root}>
-      <Text className={styles.description}>
+      <Text className={styles.description} italic block>
         Créer une zone interactive à la position du curseur.
       </Text>
 
@@ -182,9 +189,18 @@ const CreatePanel: React.FC = () => {
           </div>
         )}
 
-        <Button appearance="primary" icon={<AddSquareRegular />} type="submit">
+        <Button
+          appearance="primary"
+          icon={
+            isLoading ? <Spinner appearance="inverted" size="extra-tiny" /> : <AddSquareRegular />
+          }
+          type="submit"
+          disabled={isLoading}
+        >
           Créer une zone interactive
         </Button>
+
+        {error && <ErrorText>{error}</ErrorText>}
       </form>
     </section>
   );

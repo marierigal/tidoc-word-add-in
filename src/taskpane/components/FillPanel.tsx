@@ -14,16 +14,12 @@ import {
 import { ArrowSyncRegular, DocumentPdfRegular } from '@fluentui/react-icons';
 import * as React from 'react';
 
-import {
-  exportToPdf,
-  getRichTextTaggedControls,
-  groupByTag,
-  type GroupedTaggedControls,
-  scrollToContentControl,
-} from '../taskpane';
+import { ContentControlsService } from '../../services/word/ContentControlsService';
+import { PDFExportService } from '../../services/word/PDFExportService';
+import type { GroupedTaggedControls } from '../../types/GroupedTaggedControl';
 
 import ClientSearch from './ClientSearch';
-import ControlContentUpdateInput from './ControlContentUpdateInput';
+import UpdateTextInput from './UpdateTextInput';
 
 const useStyles = makeStyles({
   root: {
@@ -35,7 +31,6 @@ const useStyles = makeStyles({
   },
   description: {
     color: tokens.colorNeutralForeground3,
-    fontStyle: 'italic',
   },
   list: {
     display: 'flex',
@@ -71,23 +66,31 @@ const FillPanel: React.FC = () => {
   const [groups, setGroups] = React.useState<GroupedTaggedControls>({});
 
   const handleRefresh = async () => {
-    const controls = await getRichTextTaggedControls();
-    setGroups(groupByTag(controls));
+    const controls = await ContentControlsService.getRichTextTaggedControls();
+    setGroups(ContentControlsService.groupByTag(controls));
   };
 
   React.useEffect(() => {
-    getRichTextTaggedControls().then(controls => setGroups(groupByTag(controls)));
+    ContentControlsService.getRichTextTaggedControls().then(controls =>
+      setGroups(ContentControlsService.groupByTag(controls))
+    );
   }, []);
 
   return (
     <section role="tabpanel" aria-labelledby="fill-panel-label" className={styles.root}>
-      <Text className={styles.description}>Remplir les zones interactives.</Text>
+      <Text className={styles.description} italic block>
+        Remplir les zones interactives.
+      </Text>
 
       <Button onClick={handleRefresh} icon={<ArrowSyncRegular />}>
         Mettre à jour la liste
       </Button>
 
-      <Button appearance="primary" onClick={exportToPdf} icon={<DocumentPdfRegular />}>
+      <Button
+        appearance="primary"
+        onClick={() => PDFExportService.export()}
+        icon={<DocumentPdfRegular />}
+      >
         Exporter en PDF
       </Button>
 
@@ -108,7 +111,9 @@ const FillPanel: React.FC = () => {
 
                     {controls.map((control, index) => (
                       <InteractionTag key={control.id}>
-                        <InteractionTagPrimary onClick={() => scrollToContentControl(control.id)}>
+                        <InteractionTagPrimary
+                          onClick={() => ContentControlsService.scrollTo(control.id)}
+                        >
                           <Text>#{index + 1}</Text>
                         </InteractionTagPrimary>
                       </InteractionTag>
@@ -127,7 +132,9 @@ const FillPanel: React.FC = () => {
                     </Text>
 
                     <InteractionTag size="small" appearance="brand">
-                      <InteractionTagPrimary onClick={() => scrollToContentControl(control.id)}>
+                      <InteractionTagPrimary
+                        onClick={() => ContentControlsService.scrollTo(control.id)}
+                      >
                         <Text wrap={false}>Aller à</Text>
                       </InteractionTagPrimary>
                     </InteractionTag>
@@ -135,7 +142,7 @@ const FillPanel: React.FC = () => {
 
                   <div className={styles.inputGroup}>
                     <Label>Remplir le contenu de la zone</Label>
-                    <ControlContentUpdateInput controlId={control.id} />
+                    <UpdateTextInput controlId={control.id} />
                   </div>
                 </div>
               ))
