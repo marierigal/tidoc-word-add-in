@@ -16,7 +16,7 @@
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
     "dev-server": "webpack serve --mode development",
-    "lint": "yarn lint:eslint && yarn lint:prettier",
+    "lint": "npm run lint:eslint && npm run lint:prettier",
     "lint:eslint": "eslint --fix --quiet --no-error-on-unmatched-pattern \"src/**/*.{ts,tsx}\"",
     "lint:prettier": "prettier --write --no-error-on-unmatched-pattern \"src/**/*.{js,ts,tsx,md,mdx,json,yml}\"",
     "signin": "office-addin-dev-settings m365-account login",
