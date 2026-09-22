@@ -16,7 +16,7 @@ export class ClientApiService {
   }
 
   public static async search(query: string): Promise<Client[]> {
-    const response = await fetch(`${ClientApiService.baseURL}/search?q=${query}`);
+    const response = await fetch(`${ClientApiService.baseURL}/clients/search?q=${query}`);
     return response.ok ? response.json() : [];
   }
 }
