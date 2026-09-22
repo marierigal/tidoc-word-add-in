@@ -110,7 +110,7 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
       setResults([]);
       setIsOpen(false);
       setIsLoading(false);
-      return null;
+      return undefined;
     }
 
     setIsLoading(true);
