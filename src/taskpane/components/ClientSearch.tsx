@@ -276,7 +276,11 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
                 }}
                 onClick={() => handleSelect(result)}
               >
-                {result.type === ClientType.PROFESSIONAL ? result.company : result.lastName}
+                {result.type === ClientType.PROFESSIONAL
+                  ? result.company
+                  : result.firstName
+                    ? `${result.firstName} ${result.lastName}`
+                    : (result.lastName ?? result.reference)}
               </li>
             ))
           ) : (
@@ -289,63 +293,63 @@ const ClientSearch: React.FC<{ controls: TaggedControl[] }> = ({ controls }) => 
         <>
           <List className={styles.clientPreviewList}>
             <ListItem className={styles.clientPreviewListItem}>
-              Référence : <strong>{selectedResult.reference}</strong>
+              Référence <strong>{selectedResult.reference}</strong>
             </ListItem>
             {selectedResult.type === ClientType.PROFESSIONAL && (
               <>
                 <ListItem className={styles.clientPreviewListItem}>
-                  Nom de l'entreprise : <strong>{selectedResult.company}</strong>
+                  Nom de l'entreprise <strong>{selectedResult.company}</strong>
                 </ListItem>
                 {selectedResult.siret && (
                   <ListItem className={styles.clientPreviewListItem}>
-                    SIRET : <strong>{selectedResult.siret}</strong>
+                    SIRET <strong>{selectedResult.siret}</strong>
                   </ListItem>
                 )}
               </>
             )}
             {selectedResult.firstName && (
               <ListItem className={styles.clientPreviewListItem}>
-                Prénom : <strong>{selectedResult.firstName}</strong>
+                Prénom <strong>{selectedResult.firstName}</strong>
               </ListItem>
             )}
             {selectedResult.lastName && (
               <ListItem className={styles.clientPreviewListItem}>
-                Nom : <strong>{selectedResult.lastName}</strong>
+                Nom <strong>{selectedResult.lastName}</strong>
               </ListItem>
             )}
             {selectedResult.email && (
               <ListItem className={styles.clientPreviewListItem}>
-                Email : <strong>{selectedResult.email}</strong>
+                Email <strong>{selectedResult.email}</strong>
               </ListItem>
             )}
             {selectedResult.phone && (
               <ListItem className={styles.clientPreviewListItem}>
-                Téléphone : <strong>{selectedResult.phone}</strong>
+                Téléphone <strong>{selectedResult.phone}</strong>
               </ListItem>
             )}
             {selectedResult.address && (
               <ListItem className={styles.clientPreviewListItem}>
-                Adresse : <strong>{selectedResult.address}</strong>
+                Adresse <strong>{selectedResult.address}</strong>
               </ListItem>
             )}
             {selectedResult.cp && (
               <ListItem className={styles.clientPreviewListItem}>
-                Code Postal : <strong>{selectedResult.cp}</strong>
+                Code Postal <strong>{selectedResult.cp}</strong>
               </ListItem>
             )}
             {selectedResult.city && (
               <ListItem className={styles.clientPreviewListItem}>
-                Ville : <strong>{selectedResult.city}</strong>
+                Ville <strong>{selectedResult.city}</strong>
               </ListItem>
             )}
             {selectedResult.note && (
               <ListItem className={styles.clientPreviewListItem}>
-                Note : <strong>{selectedResult.note}</strong>
+                Note <strong>{selectedResult.note}</strong>
               </ListItem>
             )}
             {selectedResult.accountantId && (
               <ListItem className={styles.clientPreviewListItem}>
-                Compte Comptable : <strong>{selectedResult.accountantId}</strong>
+                Compte Comptable <strong>{selectedResult.accountantId}</strong>
               </ListItem>
             )}
           </List>
